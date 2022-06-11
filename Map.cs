@@ -3,14 +3,22 @@ using Raylib_cs;
 public class Map
 {
     public char[] mapData;
-    public Dictionary<char, int> tileCosts;
+    private static readonly Dictionary<char, int> TileCosts = new Dictionary<char, int>()
+        {
+            {'.', 10},
+            {'_', 20},
+            {'T', 100},
+            {'^', 150},
+            {'~', 180},
+            {'#', int.MaxValue},
+            {' ', 10}
+        };
 
     public int mapX, mapY;
 
     public Map()
     {
         this.mapData = new char[42 * 42];
-        this.tileCosts = new Dictionary<char, int>();
         this.mapX = 42;
         this.mapY = 42;
     }
@@ -21,30 +29,28 @@ public class Map
         this.mapY = mapY;
         this.mapData = new char[mapX * mapY];
 
-        int i = 0, j = 0;
+        int y = 0, x = 0;
         foreach (var c in mapStr)
         {
             if (c == '\n')
             {
-                j = 0;
-                i++;
+                x = 0;
+                y++;
                 continue;
             }
-            this.mapData[j + i * mapX] = c;
-            j++;
+            this.mapData[x + y * mapX] = c;
+            x++;
         }
-
-        this.tileCosts = new Dictionary<char, int>();
     }
 
     public void DrawMap(int posX, int posY, int tileSize)
     {
-        for(int i = 0; i < mapY; i++)
+        for(int j = 0; j < mapY; j++)
         {
-            for(int j = 0; j < mapX; j++)
+            for(int i = 0; i < mapX; i++)
             {
-                var (c, cost) = GetPos(j, i);
-                Raylib.DrawRectangle(posX + j * tileSize, posY + i * tileSize, tileSize, tileSize, c == ' ' ? Color.GRAY : Color.BLACK);
+                var (c, cost) = GetPos(i, j);
+                Raylib.DrawRectangle(posX + i * tileSize, posY + j * tileSize, tileSize, tileSize, c == ' ' ? Color.GRAY : Color.BLACK);
             }
         }
     }
@@ -52,6 +58,6 @@ public class Map
     public (char, int) GetPos(int x, int y)
     {
         char posTile = mapData[x + y * mapX];
-        return (posTile, tileCosts.GetValueOrDefault(posTile, -1));
+        return (posTile, TileCosts.GetValueOrDefault(posTile, -1));
     }
 }
