@@ -14,19 +14,19 @@ public class Map
             {' ', 10}
         };
 
-    public int mapX, mapY;
+    public int sizeX, sizeY;
 
     public Map()
     {
         this.mapData = new char[42 * 42];
-        this.mapX = 42;
-        this.mapY = 42;
+        this.sizeX = 42;
+        this.sizeY = 42;
     }
 
     public Map(string mapStr, int mapX, int mapY)
     {
-        this.mapX = mapX;
-        this.mapY = mapY;
+        this.sizeX = mapX;
+        this.sizeY = mapY;
         this.mapData = new char[mapX * mapY];
 
         int y = 0, x = 0;
@@ -43,21 +43,27 @@ public class Map
         }
     }
 
+    public char this[int x, int y]
+    {
+        get { return mapData[x + y * sizeX]; }
+        set { mapData[x + y * sizeX] = value; }
+    }
+
+    public (char, int) GetPos(int x, int y)
+    {
+        char posTile = mapData[x + y * sizeX];
+        return (posTile, TileCosts.GetValueOrDefault(posTile, -1));
+    }
+
     public void DrawMap(int posX, int posY, int tileSize)
     {
-        for(int j = 0; j < mapY; j++)
+        for(int j = 0; j < sizeY; j++)
         {
-            for(int i = 0; i < mapX; i++)
+            for(int i = 0; i < sizeX; i++)
             {
                 var (c, cost) = GetPos(i, j);
                 Raylib.DrawRectangle(posX + i * tileSize, posY + j * tileSize, tileSize, tileSize, c == ' ' ? Color.GRAY : Color.BLACK);
             }
         }
-    }
-
-    public (char, int) GetPos(int x, int y)
-    {
-        char posTile = mapData[x + y * mapX];
-        return (posTile, TileCosts.GetValueOrDefault(posTile, -1));
     }
 }

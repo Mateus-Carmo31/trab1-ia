@@ -2,6 +2,8 @@ namespace Astar;
 
 public class Astar
 {
+    Map map;
+
     public void astar() 
     {
         Tile start = new Tile(1, 1);
@@ -25,11 +27,11 @@ public class Astar
 
             foreach (Tile next in neighbours(current))
             {
-                int newCost = costSoFar[current] + graphCost();
+                int newCost = costSoFar[current] + GraphCost();
                 if (costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
                     costSoFar[next] = newCost;
-                    int priority = newCost + manhattanDistance(goal, next);
+                    int priority = newCost + ManhattanDistance(goal, next);
                     frontier.Enqueue(next, priority);
                     cameFrom[next] = current;
                 }
@@ -37,31 +39,30 @@ public class Astar
         }
     }
 
-    public int manhattanDistance(Tile goal, Tile origin)
+    public int ManhattanDistance(Tile goal, Tile origin)
     {
         return Math.Abs(goal.x - origin.x) + Math.Abs(goal.y - origin.y);
     }
 
-    public int graphCost()
+    public int GraphCost()
     {
         return 1;
     }
 
     public List<Tile> neighbours(Tile current)
     {
-        var neighbours = new List<Tile> {new Tile(1, 0), new Tile(0, 1)};
+        var neighbours = new List<Tile> {new Tile(1, 0), new Tile(0, 1), new Tile(-1, 0), new Tile(0, -1)};
+        neighbours.ForEach((Tile tile) => {
+            tile.x += current.x;
+            tile.y += current.y;
+            });
+        neighbours = neighbours.FindAll(
+            (Tile tile) =>
+            (tile.x >= 0 && tile.x <= map.sizeX &&
+             tile.y >= 0 && tile.y <= map.sizeY)
+            );
         return neighbours;
     }
 }
 
-public class Tile
-{
-    public int x;
-    public int y;
-
-    public Tile(int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-}
+public record struct Tile(int x, int y);
