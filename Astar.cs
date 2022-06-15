@@ -1,4 +1,4 @@
-namespace Astar;
+namespace MapPathfinder;
 
 public class Astar
 {
