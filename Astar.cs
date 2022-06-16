@@ -29,12 +29,23 @@ public class Astar
             }
 
             foreach (Tile next in neighbours(current))
-            {  
-                int newCost = costSoFar[current] + CostToNext(next);
+            {
+                int costToNext = CostToNext(next);
+                int newCost;
+                
+                if (costToNext == int.MaxValue || costSoFar[current] == int.MaxValue)
+                {
+                    newCost = costToNext;
+                }
+                else
+                {
+                    newCost = costToNext + costSoFar[current];
+                }
+
                 if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
                     costSoFar[next] = newCost;
-                    int priority = newCost + ManhattanDistance(goal, next);
+                    int priority = newCost == int.MaxValue ? newCost : newCost + ManhattanDistance(goal, next);
                     frontier.Enqueue(next, priority);
                     cameFrom[next] = current;
                 }
@@ -48,21 +59,19 @@ public class Astar
         }
 
         List<Tile> path = new List<Tile>();
-        // Tile auxTile = goal;
+        Tile auxTile = goal;
 
-        // Console.WriteLine();
+        while(true)
+        {
+            path.Add(auxTile);
+            if (cameFrom[auxTile] == null)
+            {
+                break;
+            }
+            auxTile = cameFrom[auxTile] ?? new Tile(0, 0);
+        }
 
-        // while(true)
-        // {
-        //     path.Add(auxTile);
-        //     if (cameFrom[auxTile] == null)
-        //     {   
-        //         break;
-        //     }
-        //     auxTile = cameFrom[auxTile] ?? new Tile(0, 0);
-        // }
-
-        // path.Reverse();
+        path.Reverse();
 
         return path;
     }
