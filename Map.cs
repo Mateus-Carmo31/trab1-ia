@@ -3,7 +3,7 @@ using Raylib_cs;
 public class Map
 {
     public char[] mapData;
-    private static readonly Dictionary<char, int> TileCosts = new Dictionary<char, int>()
+    public static readonly Dictionary<char, int> TileCosts = new Dictionary<char, int>()
         {
             {'.', 10},
             {'_', 20},

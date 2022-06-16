@@ -11,8 +11,19 @@ namespace MapPathfinder
         {
             Raylib.InitWindow(800, 480, "Hello World");
             var mapStr = System.IO.File.ReadAllText(@"dungeon3.txt");
-            curMap = new Map(mapStr, 28, 28);
             Raylib.SetTargetFPS(60);
+
+            curMap = new Map(mapStr, 28, 28);
+
+            var algorithm = new Astar(curMap);
+
+            List<Tile>? path = algorithm.execute(new Tile(14, 25), new Tile(15, 19));
+
+            path?.ForEach((element) => {
+                Console.WriteLine(element);
+            });
+
+
         }
 
         public bool isRunning()
