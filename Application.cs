@@ -10,12 +10,12 @@ namespace MapPathfinder
 
         public void Init()
         {
-            Raylib.InitWindow(800, 800, "A* Prototype");
-            var mapStr = System.IO.File.ReadAllText(@"dungeon3.txt");
+            Raylib.InitWindow(1000, 800, "A* Prototype");
+            var mapStr = System.IO.File.ReadAllText(@"mapa_test.txt");
             Raylib.SetTargetFPS(60);
 
-            curMap = new Map(mapStr, 28, 28);
-            pathfinder = new AStar(curMap, (14,25), (15,19));
+            curMap = new Map(mapStr, 50, 35);
+            pathfinder = new AStar(curMap, (0,0), (49,34));
         }
 
         public bool isRunning()
@@ -31,7 +31,7 @@ namespace MapPathfinder
         }
 
         // float x = 0, y = 0, speedX = 100, speedY = 100;
-        float timer = 0.05f, timerMax = 0.05f;
+        float timer = 0.02f, timerMax = 0.02f;
         bool autoStep = false, drawCurrent = true, drawCosts = false;
         AStar.State execState;
         public void Update(float delta)

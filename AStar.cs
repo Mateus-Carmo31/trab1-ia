@@ -15,7 +15,7 @@ public class AStar
         public Path(List<Tile> tiles, int cost) { this.tiles = tiles; this.cost = cost; }
     }
 
-    PriorityQueue<Tile, int?> frontier = new PriorityQueue<Tile, int?>();
+    PriorityQueue<Tile, float?> frontier = new PriorityQueue<Tile, float?>();
     Dictionary<Tile, Tile?> cameFrom  = new Dictionary<Tile, Tile?>();
     Dictionary<Tile, int> costSoFar  = new Dictionary<Tile, int>();
     Tile start;
@@ -77,14 +77,14 @@ public class AStar
             if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
             {
                 costSoFar[next] = newCost;
-                int priority = newCost == int.MaxValue ? newCost : newCost + ManhattanDistance(goal, next);
+                float priority = newCost == int.MaxValue ? newCost : newCost + ManhattanDistance(goal, next);
                 frontier.Enqueue(next, priority);
                 cameFrom[next] = current;
             }
         }
 
         // Frontier is empty, which means that there's nothing left to explore
-        // Since we got here, it means we never found the goal, so return null path and negative cost.
+        // Since we got here, it means we never found the goal, so return null path.
         if (frontier.Count == 0)
         {
             currentState = State.Failure;
@@ -96,7 +96,7 @@ public class AStar
 
     // Does the full A*. Use for computation
     // Returns a tuple (path, cost) where path can be null in the case that no path was found.
-    public Path? RunFull(Tile start, Tile goal)
+    public Path? RunFull()
     {
         Path? path;
         do
@@ -110,7 +110,7 @@ public class AStar
     // Resets the AStar instance (without changing start and goal)
     public void Reset()
     {
-        frontier = new PriorityQueue<Tile, int?>();
+        frontier = new PriorityQueue<Tile, float?>();
         cameFrom = new Dictionary<Tile, Tile?>();
         costSoFar = new Dictionary<Tile, int>();
         currentState = State.NotStarted;
@@ -125,6 +125,12 @@ public class AStar
             start = new Tile(newStart.Value.x, newStart.Value.y);
         if(newGoal.HasValue)
             goal = new Tile(newGoal.Value.x, newGoal.Value.y);
+    }
+
+    public static Path? FindPath(Map map, (int x, int y) start, (int x, int y) goal)
+    {
+        AStar pathfinder = new AStar(map, start, goal);
+        return pathfinder.RunFull();
     }
 
     // Backtracks from tile t until the beginning.
@@ -157,6 +163,11 @@ public class AStar
     private int ManhattanDistance(Tile goal, Tile origin)
     {
         return Math.Abs(goal.x - origin.x) + Math.Abs(goal.y - origin.y);
+    }
+
+    private float EuclideanDistance(Tile goal, Tile origin)
+    {
+        return (float) Math.Sqrt((double) ((goal.x - origin.x) * (goal.x - origin.x) + (goal.y - origin.y) * (goal.y - origin.y)));
     }
 
     private int CostToNext(Tile next)
@@ -198,7 +209,7 @@ public class AStar
                 for(int i = 0; i < map.sizeX; i++)
                 {
                     Tile t = new Tile(i, j);
-                    if(costSoFar.ContainsKey(t) && costSoFar[t] != int.MaxValue)
+                    if(costSoFar.ContainsKey(t) && (int) costSoFar[t] != int.MaxValue)
                     {
                         Raylib.DrawText((costSoFar[t] + ManhattanDistance(goal, t)).ToString(), posX + i * tileSize, posY + j * tileSize, tileSize / 2, Color.BLACK);
                     }
