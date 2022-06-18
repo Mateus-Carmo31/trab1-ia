@@ -6,24 +6,16 @@ namespace MapPathfinder
     public class Application
     {
         Map curMap;
+        AStar pathfinder;
 
         public void Init()
         {
-            Raylib.InitWindow(800, 480, "Hello World");
+            Raylib.InitWindow(800, 800, "A* Prototype");
             var mapStr = System.IO.File.ReadAllText(@"dungeon3.txt");
             Raylib.SetTargetFPS(60);
 
             curMap = new Map(mapStr, 28, 28);
-
-            var algorithm = new Astar(curMap);
-
-            List<Tile>? path = algorithm.execute(new Tile(14, 25), new Tile(15, 19));
-
-            path?.ForEach((element) => {
-                Console.WriteLine(element);
-            });
-
-
+            pathfinder = new AStar(curMap, (14,25), (15,19));
         }
 
         public bool isRunning()
@@ -38,21 +30,38 @@ namespace MapPathfinder
             Render(dt);
         }
 
-        float x = 0, y = 0, speedX = 100, speedY = 100;
+        // float x = 0, y = 0, speedX = 100, speedY = 100;
+        float timer = 0.05f, timerMax = 0.05f;
+        bool autoStep = false, drawCurrent = true, drawCosts = false;
+        AStar.State execState;
         public void Update(float delta)
         {
-            x += speedX * delta;
-            y += speedY * delta;
+            // x += speedX * delta;
+            // y += speedY * delta;
 
-            if (x + 20 >= 800 || x < 0)
+            // if (x + 20 >= 800 || x < 0)
+            // {
+            //     x = speedX > 0 ? 780 : 0;
+            //     speedX = -speedX;
+            // }
+            // if (y + 20 >= 480 || y < 0)
+            // {
+            //     y = speedY > 0 ? 460 : 0;
+            //     speedY = -speedY;
+            // }
+            if (autoStep)
+                timer = Math.Max(0, timer - delta);
+
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
+                autoStep = !autoStep;
+
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_C))
+                drawCosts = !drawCosts;
+
+            if ((timer == 0 || Raylib.IsKeyPressed(KeyboardKey.KEY_N)) && (execState == AStar.State.NotStarted || execState == AStar.State.InExec))
             {
-                x = speedX > 0 ? 780 : 0;
-                speedX = -speedX;
-            }
-            if (y + 20 >= 480 || y < 0)
-            {
-                y = speedY > 0 ? 460 : 0;
-                speedY = -speedY;
+                (execState, _) = pathfinder.RunStep();
+                timer = timerMax;
             }
         }
 
@@ -61,9 +70,10 @@ namespace MapPathfinder
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.WHITE);
 
-            Raylib.DrawRectangle((int) x, (int) y, 20, 20, Color.BLACK);
+            // Raylib.DrawRectangle((int) x, (int) y, 20, 20, Color.BLACK);
 
-            // curMap.DrawMap(0, 0, 10);
+            curMap.DrawMap(0, 0, 20);
+            pathfinder.DrawOverlay(0,0,20, drawCurrent, drawCosts);
 
             Raylib.EndDrawing();
         }

@@ -14,6 +14,8 @@ public class Map
             {' ', 10}
         };
 
+    public record struct Tile(int x, int y);
+
     public int sizeX, sizeY;
 
     public Map()
@@ -49,10 +51,29 @@ public class Map
         set { mapData[x + y * sizeX] = value; }
     }
 
-    public (char, int) GetPos(int x, int y)
+    public int GetCostAt(int x, int y)
     {
-        char posTile = mapData[x + y * sizeX];
-        return (posTile, TileCosts.GetValueOrDefault(posTile, -1));
+        return TileCosts[this[x,y]];
+    }
+
+    public List<Tile> Neighbours(Tile t)
+    {
+        // Lista de posições relativas adjacentes ao current
+        var neighbours = new List<Tile> {new Tile(1, 0), new Tile(0, -1), new Tile(-1, 0), new Tile(0, 1)};
+
+        // Lista de posições absolutas adjacentes ao current no mapa
+        neighbours = neighbours.ConvertAll<Tile>((Tile tile) => {
+            tile.x += t.x;
+            tile.y += t.y;
+            return tile;
+        });
+
+        // Filtragem para não pegar posições fora do mapa
+        neighbours = neighbours.FindAll((Tile tile) => {
+            return (tile.x >= 0 && tile.x < this.sizeX && tile.y >= 0 && tile.y < this.sizeY);
+        });
+
+        return neighbours;
     }
 
     public void DrawMap(int posX, int posY, int tileSize)
@@ -61,7 +82,7 @@ public class Map
         {
             for(int i = 0; i < sizeX; i++)
             {
-                var (c, cost) = GetPos(i, j);
+                var c = this[i,j];
                 Raylib.DrawRectangle(posX + i * tileSize, posY + j * tileSize, tileSize, tileSize, c == ' ' ? Color.GRAY : Color.BLACK);
             }
         }

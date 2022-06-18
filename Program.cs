@@ -10,29 +10,27 @@ static class Program
         // Casa pra LostWoods -> (24, 27) para (6, 5)
         // Dungeon 1 pra Dungeon 3 -> (5, 32) para (24, 1)
         // Dungeon 2 pra Dungeon 3 -> (39, 17) para (24, 1)
-        var mapStr = System.IO.File.ReadAllText(@"hyrule.txt");
-        Map curMap = new Map(mapStr, 42, 42);
+        // var mapStr = System.IO.File.ReadAllText(@"hyrule.txt");
+        // Map curMap = new Map(mapStr, 42, 42);
 
-        var algorithm = new Astar(curMap);
+        // var algorithm = new Astar(curMap);
 
-        List<Tile>? path = algorithm.execute(new Tile(39, 17), new Tile(24, 1));
+        // List<Tile>? path = algorithm.execute(new Tile(39, 17), new Tile(24, 1));
 
-        path?.ForEach((element) => {
-            Console.WriteLine(element);
-        });
+        // path?.ForEach((element) => {
+        //     Console.WriteLine(element);
+        // });
 
-        Console.WriteLine(path?.Count);
+        // Console.WriteLine(path?.Count);
 
-        
+        var app = new Application();
+        app.Init();
 
-        // var app = new Application();
-        // app.Init();
+        while(app.isRunning())
+        {
+            app.MainLoop();
+        }
 
-        // while(app.isRunning())
-        // {
-        //     app.MainLoop();
-        // }
-
-        // app.Close();
+        app.Close();
     }
 }
