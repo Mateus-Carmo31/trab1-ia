@@ -56,7 +56,9 @@ public class Map
         }
     }
 
-    public record struct Tile(int x, int y);
+    public record struct Tile(int x, int y) {
+        public (int x, int y) GetTuple() => (x, y);
+    }
 
     public int sizeX, sizeY;
 
