@@ -86,13 +86,21 @@ public class MapViewer : UI
     private Map? map;
     private Map.Tileset? tileset;
 
-    public void SetMap(Map map) => this.map = map;
-    public void SetTileset(Map.Tileset tileset) => this.tileset = tileset;
-    public void SetTileSize(float tileSize) => this.tileSize = tileSize;
-
     public MapViewer(float x, float y, float tileSize) : base(x,y)
     {
         this.tileSize = tileSize;
+    }
+
+    public float TileSize { get => tileSize; set => tileSize = value; }
+    public Map? Map { get => map; set => map = value; }
+    public Map.Tileset? Tileset
+    {
+        get => tileset;
+        set
+        {
+            tileset?.ClearTileset();
+            tileset = value;
+        }
     }
 
     public override void Draw()

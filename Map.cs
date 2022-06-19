@@ -39,12 +39,20 @@ public class Map
             return sprites[tile];
         }
 
-        ~Tileset()
+        public void Clear()
         {
+            Raylib.TraceLog(TraceLogLevel.LOG_INFO, $"TILESET: Clearing tileset ({sprites.Count} textures)");
             foreach (var tex in sprites.Values)
             {
                 Raylib.UnloadTexture(tex);
             }
+            Raylib.TraceLog(TraceLogLevel.LOG_INFO, $"TILESET: Tileset cleared.");
+            sprites.Clear();
+        }
+
+        ~Tileset()
+        {
+            Clear();
         }
     }
 
@@ -52,9 +60,9 @@ public class Map
 
     public int sizeX, sizeY;
 
-    public Map()
+    public Map(int mapX, int mapY)
     {
-        this.mapData = new char[42 * 42];
+        this.mapData = new char[mapX * mapY];
         this.sizeX = 42;
         this.sizeY = 42;
     }
