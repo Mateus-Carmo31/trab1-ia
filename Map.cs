@@ -14,6 +14,40 @@ public class Map
             {' ', 10}
         };
 
+    public class Tileset
+    {
+        private Dictionary<char, Texture2D> sprites = new Dictionary<char, Texture2D>();
+
+        public void SetSprite(char tile, string imagePath)
+        {
+            Image image = Raylib.LoadImage(imagePath);
+            Texture2D texture = Raylib.LoadTextureFromImage(image);
+            Raylib.UnloadImage(image);
+
+            if (!sprites.ContainsKey(tile))
+            {
+                sprites.Add(tile, texture);
+                return;
+            }
+
+            Raylib.UnloadTexture(sprites[tile]);
+            sprites[tile] = texture;
+        }
+
+        public Texture2D GetSprite(char tile)
+        {
+            return sprites[tile];
+        }
+
+        ~Tileset()
+        {
+            foreach (var tex in sprites.Values)
+            {
+                Raylib.UnloadTexture(tex);
+            }
+        }
+    }
+
     public record struct Tile(int x, int y);
 
     public int sizeX, sizeY;
@@ -74,17 +108,5 @@ public class Map
         });
 
         return neighbours;
-    }
-
-    public void DrawMap(int posX, int posY, int tileSize)
-    {
-        for(int j = 0; j < sizeY; j++)
-        {
-            for(int i = 0; i < sizeX; i++)
-            {
-                var c = this[i,j];
-                Raylib.DrawRectangle(posX + i * tileSize, posY + j * tileSize, tileSize, tileSize, c == ' ' ? Color.GRAY : Color.BLACK);
-            }
-        }
     }
 }
