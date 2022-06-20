@@ -114,6 +114,11 @@ public class AStar
         return pathfinder.RunFull();
     }
 
+    public static Path? FindPath(Map map, Tile start, Tile goal)
+    {
+        return FindPath(map, (start.x, start.y), (goal.x, goal.y));
+    }
+
     // Resets the AStar instance (without changing start and goal)
     public void Reset()
     {

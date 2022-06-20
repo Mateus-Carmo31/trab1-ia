@@ -6,9 +6,6 @@ using Rectangle = Raylib_cs.Rectangle;
 
 public abstract class UI
 {
-    public static Texture2D? txButtonOn;
-    public static Texture2D? txButtonOff;
-
     protected readonly Vector2 TILING = new Vector2(1,1);
     protected readonly Vector2 OFFSET = new Vector2(0,0);
 
@@ -18,7 +15,7 @@ public abstract class UI
 
     public abstract void Draw();
     public virtual void Update(float delta) {}
-    public abstract Rectangle GetBoundingBox();
+    public virtual void Cleanup() {}
 }
 
 public class Label : UI
@@ -38,20 +35,48 @@ public class Label : UI
     {
         Raylib.DrawText(text, (int) pos.x, (int) pos.y, fontSize, textColor);
     }
-
-    public override Rectangle GetBoundingBox()
-    {
-        throw new NotImplementedException();
-    }
 }
 
-public class Button
+public class Button : UI
 {
-    // TODO: Normal click button
+    public event EventHandler OnClick;
+    private bool pressed = false;
+    public (float x, float y) size;
+
+    public Button(float x, float y, float sizeX, float sizeY) : base(x,y)
+    {
+        size.x = sizeX;
+        size.y = sizeY;
+    }
+
+    public override void Draw()
+    {
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.BLACK : Color.GRAY);
+    }
+
+    public override void Update(float delta)
+    {
+        var mouse = Raylib.GetMousePosition();
+        var bounds = new Rectangle(pos.x, pos.y, size.x, size.y);
+
+        if (mouse.X >= pos.x && mouse.X <= pos.x + size.x && mouse.Y >= pos.y && mouse.Y <= pos.y + size.y && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+            pressed = true;
+
+        if (Raylib.IsMouseButtonReleased(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            if (mouse.X >= pos.x && mouse.X <= pos.x + size.x && mouse.Y >= pos.y && mouse.Y <= pos.y + size.y)
+            {
+                OnClick.Invoke(this, new EventArgs());
+                Raylib.TraceLog(TraceLogLevel.LOG_INFO, $"BUTTON: Button pressed");
+            }
+            pressed = false;
+        }
+    }
 }
 
 public class ToggleButton : UI
 {
+    public event EventHandler<bool>? OnToggle;
     public bool pressed = false;
     public (float x, float y) size;
 
@@ -63,20 +88,24 @@ public class ToggleButton : UI
 
     public override void Draw()
     {
-        if (!txButtonOff.HasValue || !txButtonOn.HasValue)
-            return;
+        // if (!txButtonOff.HasValue || !txButtonOn.HasValue)
+        //     return;
 
-        Raylib.DrawTextureQuad(pressed ? txButtonOn.Value : txButtonOff.Value, TILING, OFFSET, new Rectangle(pos.x, pos.y, size.x, size.y), Color.RAYWHITE);
+        // Raylib.DrawTextureQuad(pressed ? txButtonOn.Value : txButtonOff.Value, TILING, OFFSET, new Rectangle(pos.x, pos.y, size.x, size.y), Color.RAYWHITE);
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.BLACK : Color.GRAY);
     }
 
     public override void Update(float delta)
     {
-        // Check for mouse position and click
-    }
+        var mouse = Raylib.GetMousePosition();
+        var bounds = new Rectangle(pos.x, pos.y, size.x, size.y);
 
-    public override Rectangle GetBoundingBox()
-    {
-        throw new NotImplementedException();
+        if (mouse.X >= pos.x && mouse.X <= pos.x + size.x && mouse.Y >= pos.y && mouse.Y <= pos.y + size.y && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            pressed = !pressed;
+            OnToggle?.Invoke(this, pressed);
+            Raylib.TraceLog(TraceLogLevel.LOG_INFO, $"BUTTON: ToggleButton pressed ({pressed})");
+        }
     }
 }
 
@@ -91,7 +120,7 @@ public class MapViewer : UI
 
     // Visual Controls
     private float tileSize;
-    public bool showPath = false;
+    public bool showPath = true;
     public bool showExpandedTiles = false;
 
     // A* update controls
@@ -151,7 +180,7 @@ public class MapViewer : UI
         }
 
         // Draws expanded tiles over map
-        // TODO: font size scaling seems kinda broken
+        // TODO: font size scaling doesn't work
         if (showExpandedTiles)
         {
             var costsSoFar = pathfinder?.GetCostsSoFar();
@@ -183,12 +212,9 @@ public class MapViewer : UI
             pathfinder?.RunStep();
     }
 
-    public override Rectangle GetBoundingBox()
+    public override void Cleanup()
     {
-        if (map != null)
-            return new Rectangle(pos.x, pos.y, map.sizeX * tileSize, map.sizeY * tileSize);
-        else
-            return new Rectangle(pos.x, pos.y, 0, 0);
+        Tileset = null;
     }
 }
 
@@ -219,8 +245,10 @@ public class Sprite : UI
             Raylib.DrawTextureQuad(texture.Value, TILING, OFFSET, new Rectangle(pos.x, pos.y, size.X, size.Y), Color.RAYWHITE);
     }
 
-    public override Rectangle GetBoundingBox()
+    public override void Cleanup()
     {
-        throw new NotImplementedException();
+        if (texture.HasValue)
+            Raylib.UnloadTexture(texture.Value);
+        texture = null;
     }
 }

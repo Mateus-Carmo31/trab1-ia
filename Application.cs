@@ -6,7 +6,8 @@ namespace MapPathfinder
     public class Application
     {
         Map curMap;
-        MapViewer mapViewer;
+        List<UI> menuLayer = new List<UI>();
+        List<UI> mapLayer = new List<UI>();
 
         public void Init()
         {
@@ -24,11 +25,21 @@ namespace MapPathfinder
             tileset.SetSprite('#', "assets/wall.png");
             tileset.SetSprite(' ', "assets/ground.png");
 
-            mapViewer = new MapViewer(0,0, 15);
+            var mapViewer = new MapViewer(0,0, 16);
             mapViewer.Map = curMap;
             mapViewer.Tileset = tileset;
             mapViewer.SetAStarPoints((24,27), (5,32));
+
+            var tb = new ToggleButton(700, 300, 50, 50);
+            tb.OnToggle += (object? o, bool pressed) => { mapViewer.showExpandedTiles = pressed; };
+
+            var b = new Button(700, 200, 100, 50);
+            b.OnClick += (_, _) => {};
             // pathfinder = new AStar(curMap, (0,0), (49,34));
+
+            menuLayer.Add(tb);
+            menuLayer.Add(b);
+            mapLayer.Add(mapViewer);
         }
 
         public bool isRunning()
@@ -77,7 +88,8 @@ namespace MapPathfinder
             //     (execState, _) = pathfinder.RunStep();
             //     timer = timerMax;
             // }
-            mapViewer.Update(delta);
+            mapLayer.ForEach((UI ui) => ui.Update(delta));
+            menuLayer.ForEach((UI ui) => ui.Update(delta));
         }
 
         public void Render(float delta)
@@ -87,8 +99,8 @@ namespace MapPathfinder
 
             // Raylib.DrawRectangle((int) x, (int) y, 20, 20, Color.BLACK);
 
-            // pathfinder.DrawOverlay(0,0,20, drawCurrent, drawCosts);
-            mapViewer.Draw();
+            mapLayer.ForEach((UI ui) => ui.Draw());
+            menuLayer.ForEach((UI ui) => ui.Draw());
 
             Raylib.EndDrawing();
         }
@@ -101,7 +113,8 @@ namespace MapPathfinder
 
         private void DoCleanup()
         {
-            mapViewer.Tileset = null;
+            mapLayer.ForEach((UI ui) => ui.Cleanup());
+            menuLayer.ForEach((UI ui) => ui.Cleanup());
         }
     }
 }
