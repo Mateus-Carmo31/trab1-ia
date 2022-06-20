@@ -6,7 +6,6 @@ namespace MapPathfinder
     public class Application
     {
         Map curMap;
-        AStar pathfinder;
         MapViewer mapViewer;
 
         public void Init()
@@ -28,6 +27,7 @@ namespace MapPathfinder
             mapViewer = new MapViewer(0,0, 15);
             mapViewer.Map = curMap;
             mapViewer.Tileset = tileset;
+            mapViewer.SetAStarPoints((24,27), (5,32));
             // pathfinder = new AStar(curMap, (0,0), (49,34));
         }
 
@@ -77,6 +77,7 @@ namespace MapPathfinder
             //     (execState, _) = pathfinder.RunStep();
             //     timer = timerMax;
             // }
+            mapViewer.Update(delta);
         }
 
         public void Render(float delta)

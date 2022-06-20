@@ -109,7 +109,7 @@ static class Program
             hyrule,
             linksHome.GetTuple(), 
             permutation[0].GetHyruleLocation().GetTuple()
-        )?.cost ?? 0;
+        )?.Cost ?? 0;
         for (int i = 0; i < permutation.Count; i++)
         {
             // Custo para entrar na dungeon, indo até o pingente e voltar
@@ -117,7 +117,7 @@ static class Program
                 permutation[i].GetMap(),
                 permutation[i].GetInnerStartLocation().GetTuple(),
                 permutation[i].GetPendantLocation().GetTuple()
-            )?.cost ?? 0;
+            )?.Cost ?? 0;
 
             // Se não for a última dungeon do trajeto, adicionar custo para a próxima dungeon
             if (i != permutation.Count - 1)
@@ -126,7 +126,7 @@ static class Program
                     hyrule,
                     permutation[i].GetHyruleLocation().GetTuple(),
                     permutation[i + 1].GetHyruleLocation().GetTuple()
-                )?.cost ?? 0;
+                )?.Cost ?? 0;
             }
         }
         // Custo da última dungeon até casa do Link
@@ -134,7 +134,7 @@ static class Program
             hyrule,
             permutation.Last().GetHyruleLocation().GetTuple(),
             linksHome.GetTuple()
-        )?.cost ?? 0;
+        )?.Cost ?? 0;
 
         return costOfPermutation;
     }

@@ -1,19 +1,11 @@
 namespace MapPathfinder;
 using Raylib_cs;
 using Tile = Map.Tile;
+using Path = Map.Path;
 
 public class AStar
 {
     Map map;
-
-    // Storage class for the path found by A*
-    public class Path
-    {
-        public List<Tile> tiles;
-        public int cost;
-
-        public Path(List<Tile> tiles, int cost) { this.tiles = tiles; this.cost = cost; }
-    }
 
     PriorityQueue<Tile, float?> frontier = new PriorityQueue<Tile, float?>();
     Dictionary<Tile, Tile?> cameFrom  = new Dictionary<Tile, Tile?>();
@@ -26,6 +18,15 @@ public class AStar
     State currentState = State.NotStarted;
 
     Path? finalPath = null;
+
+    public Path? FinalPath { get => finalPath; }
+
+    // Creates AStar without start/goal. Is set to failure to avoid mistakes when running.
+    public AStar(Map map)
+    {
+        this.map = map;
+        currentState = State.Failure;
+    }
 
     public AStar(Map map, (int x, int y) start, (int x, int y) goal)
     {
@@ -107,6 +108,12 @@ public class AStar
         return path;
     }
 
+    public static Path? FindPath(Map map, (int x, int y) start, (int x, int y) goal)
+    {
+        AStar pathfinder = new AStar(map, start, goal);
+        return pathfinder.RunFull();
+    }
+
     // Resets the AStar instance (without changing start and goal)
     public void Reset()
     {
@@ -122,20 +129,19 @@ public class AStar
     {
         Reset();
         if(newStart.HasValue)
+        {
             start = new Tile(newStart.Value.x, newStart.Value.y);
+            frontier.Enqueue(start, 0);
+            cameFrom[start] = null;
+            costSoFar[start] = 0;
+        }
         if(newGoal.HasValue)
             goal = new Tile(newGoal.Value.x, newGoal.Value.y);
     }
 
-    public static Path? FindPath(Map map, (int x, int y) start, (int x, int y) goal)
-    {
-        AStar pathfinder = new AStar(map, start, goal);
-        return pathfinder.RunFull();
-    }
-
     // Backtracks from tile t until the beginning.
     // Returns null if there is no path to t.
-    private Path? BacktrackPath(Tile t)
+    public Path? BacktrackPath(Tile t)
     {
         // The tile was never reached, so there's no path.
         if (cameFrom.ContainsKey(t) == false)
@@ -160,6 +166,11 @@ public class AStar
         return new Path(path, costSoFar[t]);
     }
 
+    public Dictionary<Tile, int> GetCostsSoFar()
+    {
+        return costSoFar;
+    }
+
     private int ManhattanDistance(Tile goal, Tile origin)
     {
         return Math.Abs(goal.x - origin.x) + Math.Abs(goal.y - origin.y);
@@ -173,48 +184,5 @@ public class AStar
     private int CostToNext(Tile next)
     {
         return map.GetCostAt(next.x, next.y);
-    }
-
-    public void DrawOverlay(int posX, int posY, int tileSize, bool drawCurrentPath = false, bool drawCosts = false)
-    {
-        // If a tile has been found, mark it with a tint of red.
-        costSoFar.Keys.ToList().ForEach((Tile t) => {
-                if(costSoFar[t] > 0)
-                {
-                    Color c = Color.RED;
-                    c.a = 127;
-                    Raylib.DrawRectangle(posX + t.x * tileSize, posY + t.y * tileSize, tileSize, tileSize, c);
-                }
-            });
-
-        // Draws final path if it exists. If not, draw path to last expanded tile.
-        if (currentState == State.Success)
-        {
-            finalPath?.tiles.ForEach((Tile t) => {
-                Raylib.DrawRectangle(posX + t.x * tileSize, posY + t.y * tileSize, tileSize, tileSize, Color.GREEN);
-                });
-        }
-        else if (currentState != State.Failure && drawCurrentPath)
-        {
-            BacktrackPath(current)?.tiles.ForEach((Tile t) => {
-                Raylib.DrawRectangle(posX + t.x * tileSize, posY + t.y * tileSize, tileSize, tileSize, Color.GREEN);
-                });
-        }
-
-        // Draws the costSoFar of a tile (if there is one and it's not infinite)
-        if (drawCosts)
-        {
-            for(int j = 0; j < map.sizeY; j++)
-            {
-                for(int i = 0; i < map.sizeX; i++)
-                {
-                    Tile t = new Tile(i, j);
-                    if(costSoFar.ContainsKey(t) && (int) costSoFar[t] != int.MaxValue)
-                    {
-                        Raylib.DrawText((costSoFar[t] + ManhattanDistance(goal, t)).ToString(), posX + i * tileSize, posY + j * tileSize, tileSize / 2, Color.BLACK);
-                    }
-                }
-            }
-        }
     }
 }

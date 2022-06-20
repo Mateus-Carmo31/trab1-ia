@@ -60,6 +60,18 @@ public class Map
         public (int x, int y) GetTuple() => (x, y);
     }
 
+    // Storage class for paths made of tiles
+    // Used by the AStar class
+    public class Path
+    {
+        public List<Tile> tiles;
+        private int cost;
+        public int Cost { get => cost; }
+
+        public Path(List<Tile> tiles, int cost) { this.tiles = tiles; this.cost = cost; }
+
+    }
+
     public int sizeX, sizeY;
 
     public Map(int mapX, int mapY)
