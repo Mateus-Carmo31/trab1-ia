@@ -1,4 +1,4 @@
-using static Map;
+using static MapPathfinder.Map;
 
 public static class Utils
 {

@@ -147,6 +147,7 @@ public class World
                 costOfPermutation += path.Cost;
             }
         }
+
         // Custo da última dungeon até casa do Link
         path = AStar.FindPath(
             overworld,
