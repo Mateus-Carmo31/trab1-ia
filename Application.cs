@@ -35,12 +35,16 @@ public class Application
         var worldViewer = new WorldViewer(0,0,16, world);
         worldViewer.Tileset = tileset;
         worldViewer.SetAStarPoints((24,27), (5,32));
+        worldViewer.actionSequence.Enqueue(() => {
+            worldViewer.ChangeMap(0);
+            worldViewer.SetAStarPoints(world.GetDungeon(0).GetStartPoint().GetTuple(), world.GetDungeon(0).GetObjetive().GetTuple());
+            });
 
         var tb = new ToggleButton(700, 300, 50, 50);
         tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedTiles = pressed; };
 
         var b = new Button(700, 200, 100, 50);
-        b.OnClick += (_, _) => {};
+        b.OnClick += (_, _) => { worldViewer.isPlaying = !worldViewer.isPlaying; };
 
         menuLayer.Add(tb);
         menuLayer.Add(b);

@@ -116,7 +116,7 @@ public class WorldViewer : UI
     // References
     private World world;
     private int currentMapID = -1;
-    private AStar? pathfinder = null;
+    private AStar pathfinder;
     private Map.Tileset? tileset = null;
 
     // Visual Controls
@@ -125,9 +125,12 @@ public class WorldViewer : UI
     public bool showExpandedTiles = false;
 
     // A* update controls
-    public bool autoStep = false;
-    public float stepTime = 0.5f;
+    public bool isPlaying = false;
+    public float stepTime = 0.01f, waitTime = 3f;
     private float timer;
+
+    // Sequence of actions (actions are changing map, setting AStar points, etc.)
+    public Queue<Action> actionSequence = new Queue<Action>();
 
     private static Color expandedTileColor = new Color(255, 71, 71, 127);
     private static Color pathColor = new Color(17, 255, 0, 200);
@@ -150,7 +153,7 @@ public class WorldViewer : UI
         }
     }
 
-    public void ChangeMap(int newId)
+    public void ChangeMap(int newId, bool setupPath = false)
     {
         currentMapID = newId;
         pathfinder = new AStar(world.GetMapByID(newId));
@@ -184,7 +187,8 @@ public class WorldViewer : UI
             var costsSoFar = pathfinder?.GetCostsSoFar();
             costsSoFar?.Keys.ToList().ForEach((Map.Tile t) => {
                         Raylib.DrawRectangle((int) (pos.x + t.x * tileSize), (int) (pos.y + t.y * tileSize), (int) tileSize, (int) tileSize, expandedTileColor);
-                        Raylib.DrawText($"{costsSoFar[t]}", (int) (pos.x + t.x * tileSize), (int) (pos.y + t.y * tileSize), (int) (tileSize / 4), Color.BLACK);
+                        if (costsSoFar[t] != int.MaxValue)
+                            Raylib.DrawText($"{costsSoFar[t]}", (int) (pos.x + t.x * tileSize), (int) (pos.y + t.y * tileSize), (int) (tileSize / 4), Color.BLACK);
                 });
         }
 
@@ -197,6 +201,7 @@ public class WorldViewer : UI
         }
     }
 
+    AStar.State lastState;
     public override void Update(float delta)
     {
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
@@ -205,9 +210,33 @@ public class WorldViewer : UI
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_C))
             showExpandedTiles = !showExpandedTiles;
 
-        timer = Math.Max(timer - delta, 0);
+        if (isPlaying)
+            timer = Math.Max(timer - delta, 0);
+
         if (timer == 0)
-            pathfinder?.RunStep();
+        {
+            var (currentState, _) = pathfinder.RunStep();
+
+            // Timer finished and AStar ended. Waiting before doing an action...
+            if (currentState == AStar.State.Success && lastState != AStar.State.Success)
+            {
+                timer = waitTime;
+            }
+            else if(lastState == AStar.State.Success) // Timer finished and pathfinder was already done. So do next action...
+            {
+                // TODO: check for empty before dequeueing, moron
+                actionSequence.Dequeue().Invoke();
+                lastState = AStar.State.NotStarted;
+                timer = stepTime;
+                return;
+            }
+            else // Normal timer
+            {
+                timer = stepTime;
+            }
+
+            lastState = currentState;
+        }
     }
 
     public override void Cleanup()
