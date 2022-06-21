@@ -11,7 +11,7 @@ public class Application
 
     public void Init()
     {
-        Raylib.InitWindow(1000, 800, "A* Prototype");
+        Raylib.InitWindow(800, 900, "A* Prototype");
         Raylib.SetTargetFPS(60);
 
         var tileset = new Map.Tileset();
@@ -22,32 +22,66 @@ public class Application
         tileset.SetSprite('~', "assets/water.png");
         tileset.SetSprite('#', "assets/wall.png");
         tileset.SetSprite(' ', "assets/ground.png");
+        tileset.SetSprite('E', "assets/entrance.png");
+        tileset.SetSprite('C', "assets/cave.png");
+        tileset.SetSprite('P', "assets/pendant.png");
+        tileset.SetSprite('L', "assets/lostwoods.png");
 
         World world = new World(
-            @"hyrule.txt",
+            @"assets/hyrule.txt",
             new Tile(24, 27),
             new Tile(6, 5),
-            new Dungeon(new Map.Tile(5, 32), new Map.Tile(14, 26), new Map.Tile(13, 3), "dungeon1.txt"),
-            new Dungeon(new Map.Tile(39, 17), new Map.Tile(13, 25), new Map.Tile(13, 2), "dungeon2.txt"),
-            new Dungeon(new Map.Tile(24, 1), new Map.Tile(14, 25), new Map.Tile(15, 19), "dungeon3.txt")
+            new Dungeon(new Map.Tile(5, 32), new Map.Tile(14, 26), new Map.Tile(13, 3), "assets/dungeon1.txt"),
+            new Dungeon(new Map.Tile(39, 17), new Map.Tile(13, 25), new Map.Tile(13, 2), "assets/dungeon2.txt"),
+            new Dungeon(new Map.Tile(24, 1), new Map.Tile(14, 25), new Map.Tile(15, 19), "assets/dungeon3.txt")
         );
 
-        var worldViewer = new WorldViewer(0,0,16, world);
+        var worldViewer = new WorldViewer(400,450,18,world);
         worldViewer.Tileset = tileset;
-        worldViewer.SetAStarPoints((24,27), (5,32));
-        worldViewer.actionSequence.Enqueue(() => {
+
+        // Go to first dungeon and generate path.
+        worldViewer.actionSequence.Enqueue((() => {
             worldViewer.ChangeMap(0);
-            worldViewer.SetAStarPoints(world.GetDungeon(0).GetStartPoint().GetTuple(), world.GetDungeon(0).GetObjetive().GetTuple());
-            });
+            worldViewer.SetAStarPoints(world.Dungeons[0].GetStartPoint(), world.Dungeons[0].GetObjetive());
+            }, 0.0f));
+
+        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
+
+        // Go to second dungeon and generate path
+        worldViewer.actionSequence.Enqueue((() => {
+            worldViewer.ChangeMap(1);
+            worldViewer.SetAStarPoints(world.Dungeons[1].GetStartPoint(), world.Dungeons[1].GetObjetive());
+            }, 0.0f));
+
+        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
+
+        // Go to third dungeon and generate path
+        worldViewer.actionSequence.Enqueue((() => {
+            worldViewer.ChangeMap(2);
+            worldViewer.SetAStarPoints(world.Dungeons[2].GetStartPoint(), world.Dungeons[2].GetObjetive());
+            }, 0.0f));
+
+        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
+
+        worldViewer.actionSequence.Enqueue((() => {
+            worldViewer.ChangeMap(-1);
+            worldViewer.SetAStarPoints(world.Home, world.Dungeons[0].GetOverworldPoint());
+            }, 0.0f));
+
+        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
 
         var tb = new ToggleButton(700, 300, 50, 50);
         tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedTiles = pressed; };
 
         var b = new Button(700, 200, 100, 50);
-        b.OnClick += (_, _) => { worldViewer.isPlaying = !worldViewer.isPlaying; };
+        b.OnClick += (_, _) => { worldViewer.StartActionSequence(); b.active = false; };
+
+        var mapName = new Label(400, 10, "Map", 20, Color.BLACK);
+        worldViewer.currentMapLabel = mapName;
 
         menuLayer.Add(tb);
         menuLayer.Add(b);
+        menuLayer.Add(mapName);
         mapLayer.Add(worldViewer);
     }
 
@@ -97,8 +131,8 @@ public class Application
         //     (execState, _) = pathfinder.RunStep();
         //     timer = timerMax;
         // }
-        mapLayer.ForEach((UI ui) => ui.Update(delta));
-        menuLayer.ForEach((UI ui) => ui.Update(delta));
+        mapLayer.ForEach((UI ui) => {if (ui.active) ui.Update(delta);} );
+        menuLayer.ForEach((UI ui) => {if (ui.active) ui.Update(delta);} );
     }
 
     public void Render(float delta)
@@ -108,8 +142,8 @@ public class Application
 
         // Raylib.DrawRectangle((int) x, (int) y, 20, 20, Color.BLACK);
 
-        mapLayer.ForEach((UI ui) => ui.Draw());
-        menuLayer.ForEach((UI ui) => ui.Draw());
+        mapLayer.ForEach((UI ui) => {if (ui.active) ui.Draw();} );
+        menuLayer.ForEach((UI ui) => {if (ui.active) ui.Draw();} );
 
         Raylib.EndDrawing();
     }

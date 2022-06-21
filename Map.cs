@@ -59,7 +59,7 @@ public class Map
     }
 
     public record struct Tile(int x, int y) {
-        public (int x, int y) GetTuple() => (x, y);
+        public static implicit operator (int x, int y)(Tile t) => (t.x, t.y);
     }
 
     // Storage class for paths made of tiles
@@ -126,9 +126,9 @@ public class Map
             return tile;
         });
 
-        // Filtragem para não pegar posições fora do mapa
+        // Filtragem para não pegar posições fora do mapa (e paredes não atravessáveis)
         neighbours = neighbours.FindAll((Tile tile) => {
-            return (tile.x >= 0 && tile.x < this.sizeX && tile.y >= 0 && tile.y < this.sizeY);
+            return (tile.x >= 0 && tile.x < this.sizeX && tile.y >= 0 && tile.y < this.sizeY && GetCostAt(tile.x, tile.y) < int.MaxValue);
         });
 
         return neighbours;

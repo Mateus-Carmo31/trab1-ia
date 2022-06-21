@@ -47,20 +47,17 @@ public class World
         this.dungeons = dungeons.ToList();
     }
 
-    public Tile GetHome() => linksHome;
-    public Tile GetLostWoods() => lostWoodsEntrance;
-    public Map GetOverworld() => overworld;
-    public Dungeon GetDungeon(int id)
-    {
-        return dungeons[id];
-    }
+    public Tile Home { get => linksHome; }
+    public Tile LostWoods { get => lostWoodsEntrance; }
+    public Map Overworld { get => overworld; }
+    public List<Dungeon> Dungeons { get => dungeons; }
 
     public Map GetMapByID(int id)
     {
         if(id == -1)
             return overworld;
 
-        return GetDungeon(id).GetMap();
+        return dungeons[id].GetMap();
     }
 
     public (int[], int) FindBestPath()
@@ -119,7 +116,7 @@ public class World
         path = AStar.FindPath(
             overworld,
             linksHome,
-            GetDungeon(perm[0]).GetOverworldPoint()
+            Dungeons[perm[0]].GetOverworldPoint()
         );
 
         if (path == null)
@@ -130,15 +127,15 @@ public class World
         for (int i = 0; i < perm.Length; i++)
         {
             // Custo para entrar na dungeon, indo até o pingente e voltar
-            costOfPermutation += 2 * GetDungeon(perm[i]).crossingCost!.Value;
+            costOfPermutation += 2 * Dungeons[perm[i]].crossingCost!.Value;
 
             // Se não for a última dungeon do trajeto, adicionar custo para a próxima dungeon
             if (i != perm.Length - 1)
             {
                 path = AStar.FindPath(
                     overworld,
-                    GetDungeon(perm[i]).GetOverworldPoint(),
-                    GetDungeon(perm[i+1]).GetOverworldPoint()
+                    Dungeons[perm[i]].GetOverworldPoint(),
+                    Dungeons[perm[i+1]].GetOverworldPoint()
                 );
 
                 if (path == null)
@@ -151,7 +148,7 @@ public class World
         // Custo da última dungeon até casa do Link
         path = AStar.FindPath(
             overworld,
-            GetDungeon(perm.Last()).GetOverworldPoint(),
+            Dungeons[perm.Last()].GetOverworldPoint(),
             linksHome
         );
 
