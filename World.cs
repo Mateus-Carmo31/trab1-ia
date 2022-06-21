@@ -55,6 +55,14 @@ public class World
         return dungeons[id];
     }
 
+    public Map GetMapByID(int id)
+    {
+        if(id == -1)
+            return overworld;
+
+        return GetDungeon(id).GetMap();
+    }
+
     public (int[], int) FindBestPath()
     {
         List<int[]> permutations = new List<int[]>();
@@ -115,7 +123,7 @@ public class World
         );
 
         if (path == null)
-            return -1;
+            return int.MaxValue;
 
         costOfPermutation += path.Cost;
 
@@ -134,7 +142,7 @@ public class World
                 );
 
                 if (path == null)
-                    return -1;
+                    return int.MaxValue;
 
                 costOfPermutation += path.Cost;
             }
@@ -147,7 +155,7 @@ public class World
         );
 
         if (path == null)
-            return -1;
+            return int.MaxValue;
 
         costOfPermutation += path.Cost;
 

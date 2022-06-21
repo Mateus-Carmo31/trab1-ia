@@ -111,10 +111,11 @@ public class ToggleButton : UI
 
 // Encapsulates the map display
 // TODO: link sprite moving over map when path is found and transitioning between maps
-public class MapViewer : UI
+public class WorldViewer : UI
 {
     // References
-    private Map? map = null;
+    private World world;
+    private int currentMapID = -1;
     private AStar? pathfinder = null;
     private Map.Tileset? tileset = null;
 
@@ -131,33 +132,28 @@ public class MapViewer : UI
     private static Color expandedTileColor = new Color(255, 71, 71, 127);
     private static Color pathColor = new Color(17, 255, 0, 200);
 
-    public MapViewer(float x, float y, float tileSize) : base(x,y)
+    public WorldViewer(float x, float y, float tileSize, World world) : base(x,y)
     {
+        this.world = world;
+        this.pathfinder = new AStar(world.GetMapByID(currentMapID));
         this.tileSize = tileSize;
         timer = stepTime;
     }
 
     public float TileSize { get => tileSize; set => tileSize = value; }
-    public Map? Map
-    {
-        get => map;
-        set
-        {
-            map = value;
-            if (map != null)
-                pathfinder = new AStar(map);
-            else
-                pathfinder = null;
-        }
-    }
     public Map.Tileset? Tileset
     {
         get => tileset;
         set
         {
-            tileset?.Clear();
             tileset = value;
         }
+    }
+
+    public void ChangeMap(int newId)
+    {
+        currentMapID = newId;
+        pathfinder = new AStar(world.GetMapByID(newId));
     }
 
     public void SetAStarPoints((int x, int y)? newStart = null, (int x, int y)? newGoal = null)
@@ -167,8 +163,10 @@ public class MapViewer : UI
 
     public override void Draw()
     {
-        if (map == null || tileset == null)
+        if (tileset == null)
             return;
+
+        var map = world.GetMapByID(currentMapID);
 
         // Draws map tiles
         for(int j = 0; j < map.sizeY; j++)
@@ -214,7 +212,7 @@ public class MapViewer : UI
 
     public override void Cleanup()
     {
-        Tileset = null;
+        tileset?.Clear();
     }
 }
 

@@ -1,3 +1,5 @@
+namespace MapPathfinder;
+
 using Raylib_cs;
 
 public class Map
