@@ -1,5 +1,5 @@
 namespace MapPathfinder;
-using Raylib_cs;
+
 using Tile = Map.Tile;
 using Path = Map.Path;
 
@@ -78,7 +78,7 @@ public class AStar
             if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
             {
                 costSoFar[next] = newCost;
-                float priority = newCost == int.MaxValue ? newCost : newCost + ManhattanDistance(goal, next);
+                float priority = newCost == int.MaxValue ? newCost : newCost + Utils.ManhattanDistance(goal, next);
                 frontier.Enqueue(next, priority);
                 cameFrom[next] = current;
             }
@@ -174,16 +174,6 @@ public class AStar
     public Dictionary<Tile, int> GetCostsSoFar()
     {
         return costSoFar;
-    }
-
-    private int ManhattanDistance(Tile goal, Tile origin)
-    {
-        return Math.Abs(goal.x - origin.x) + Math.Abs(goal.y - origin.y);
-    }
-
-    private float EuclideanDistance(Tile goal, Tile origin)
-    {
-        return (float) Math.Sqrt((double) ((goal.x - origin.x) * (goal.x - origin.x) + (goal.y - origin.y) * (goal.y - origin.y)));
     }
 
     private int CostToNext(Tile next)
