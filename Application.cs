@@ -41,11 +41,11 @@ public class Application
 
         DummySequence(worldViewer);
 
-        var tb = new ToggleButton(350, 830, 50, 50);
-        tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedCosts = pressed; };
+        var showCostsButton = new ToggleButton(350, 830, 50, 50);
+        showCostsButton.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedCosts = pressed; };
 
-        var b = new Button(50, 830, 100, 50);
-        b.OnClick += (_, _) => { worldViewer.StartActionSequence(); b.active = false; };
+        var startButton = new Button(50, 830, 100, 50);
+        startButton.OnClick += (_, _) => { worldViewer.StartActionSequence(); startButton.active = false; };
 
         var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
@@ -53,8 +53,8 @@ public class Application
         var costsLabel = new Label(400, 45, "Costs", 20, Color.BLACK);
         worldViewer.costDisplayLabel = costsLabel;
 
-        menuLayer.Add(tb);
-        menuLayer.Add(b);
+        menuLayer.Add(showCostsButton);
+        menuLayer.Add(startButton);
         menuLayer.Add(mapName);
         menuLayer.Add(costsLabel);
         mapLayer.Add(worldViewer);

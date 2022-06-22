@@ -71,7 +71,6 @@ public class Map
         public int Cost { get => cost; }
 
         public Path(List<Tile> tiles, int cost) { this.tiles = tiles; this.cost = cost; }
-
     }
 
     public int sizeX, sizeY;
