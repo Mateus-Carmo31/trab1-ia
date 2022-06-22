@@ -45,7 +45,16 @@ public class Application
         showCostsButton.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedCosts = pressed; };
 
         var startButton = new Button(50, 830, 100, 50);
-        startButton.OnClick += (_, _) => { worldViewer.StartActionSequence(); startButton.active = false; };
+        startButton.OnClick += (_, _) => { 
+            worldViewer.StartActionSequence(); 
+            startButton.active = false;
+        };
+
+        var playPauseButton = new Button(550, 830, 200, 50);
+        playPauseButton.OnClick += (_, _) => { 
+            worldViewer.PlayPauseSequence(); 
+            playPauseButton.active = true;
+        };
 
         var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
@@ -55,6 +64,7 @@ public class Application
 
         menuLayer.Add(showCostsButton);
         menuLayer.Add(startButton);
+        menuLayer.Add(playPauseButton);
         menuLayer.Add(mapName);
         menuLayer.Add(costsLabel);
         mapLayer.Add(worldViewer);
@@ -63,13 +73,13 @@ public class Application
     private void DummySequence(WorldViewer wv)
     {
         wv.AddAction(() => {
-            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(21,26)};
+            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(20,27), new Tile(19,27), new Tile(18,27), new Tile(17,27), new Tile(16,27), new Tile(15,27),new Tile(14,27) ,new Tile(13,27), new Tile(12,27), new Tile(11,27), new Tile(10,27),new Tile(9,27),new Tile(8,27),new Tile(7,27)};
             wv.isLinkWalking = true;
             }, 3.0f);
 
         wv.AddAction(() => {
             wv.linkWhere = 0.0f;
-            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(21,26)};
+            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(20,27), new Tile(19,27), new Tile(18,27), new Tile(17,27), new Tile(16,27), new Tile(15,27),new Tile(14,27) ,new Tile(13,27), new Tile(12,27), new Tile(11,27), new Tile(10,27),new Tile(9,27),new Tile(8,27),new Tile(7,27)};
             wv.isLinkWalking = true;
             }, 3.0f);
     }

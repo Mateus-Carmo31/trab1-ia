@@ -65,6 +65,11 @@ public class WorldViewer : UI
         actionSequence.Enqueue((act, delay));
     }
 
+    public void PlayPauseSequence()
+    {
+        isPlaying = !isPlaying;
+    }
+
     public void StartActionSequence()
     {
         if (actionSequence.Count == 0 || isPlaying)
@@ -149,6 +154,9 @@ public class WorldViewer : UI
 
         // if (Raylib.IsKeyPressed(KeyboardKey.KEY_C))
         //     showExpandedTiles = !showExpandedTiles;
+
+        if (!isPlaying)
+            return;
 
         if (currentMapLabel != null)
             currentMapLabel.Text = currentMapID == -1 ? "Overworld" : $"Dungeon {currentMapID+1}";
