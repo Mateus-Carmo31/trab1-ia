@@ -10,7 +10,7 @@ public class World
         private Tile startPoint;
         private Tile objective;
         private Map map;
-        public int? crossingCost;
+        public Map.Path? crossingPath;
 
         public Dungeon(Tile locationOnMap, Tile startInside, Tile pendant, string mapData)
         {
@@ -62,6 +62,7 @@ public class World
 
     public (int[], int) FindBestPath()
     {
+        PopulateDungeonPaths();
         List<int[]> permutations = new List<int[]>();
         Permutations(Enumerable.Range(0, dungeons.Count).ToArray(), 0, dungeons.Count-1, ref permutations);
 
@@ -108,7 +109,6 @@ public class World
 
     private int EvaluateCost(int[] perm)
     {
-        PopulateDungeonCosts();
         int costOfPermutation = 0;
         Map.Path? path;
 
@@ -127,7 +127,7 @@ public class World
         for (int i = 0; i < perm.Length; i++)
         {
             // Custo para entrar na dungeon, indo até o pingente e voltar
-            costOfPermutation += 2 * Dungeons[perm[i]].crossingCost!.Value;
+            costOfPermutation += 2 * Dungeons[perm[i]].crossingPath!.Cost;
 
             // Se não for a última dungeon do trajeto, adicionar custo para a próxima dungeon
             if (i != perm.Length - 1)
@@ -160,15 +160,15 @@ public class World
         return costOfPermutation;
     }
 
-    private void PopulateDungeonCosts()
+    private void PopulateDungeonPaths()
     {
         for(int i = 0; i < dungeons.Count; i++)
         {
-            dungeons[i].crossingCost = AStar.FindPath(
+            dungeons[i].crossingPath = AStar.FindPath(
                 dungeons[i].GetMap(),
                 dungeons[i].GetStartPoint(),
                 dungeons[i].GetObjetive()
-            )?.Cost;
+            );
         }
     }
 }

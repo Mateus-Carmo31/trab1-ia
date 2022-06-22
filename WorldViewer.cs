@@ -21,7 +21,7 @@ public class WorldViewer : UI
     // Visual Controls
     private float tileSize;
     public bool showPath = true;
-    public bool showExpandedTiles = true;
+    public bool showExpandedCosts = false;
 
     // A* update controls
     public bool isPlaying = false;
@@ -41,11 +41,13 @@ public class WorldViewer : UI
         this.pathfinder = new AStar(world.GetMapByID(currentMapID));
         this.tileSize = tileSize;
         timer = stepTime;
-        link = new Sprite(world.Home.x, world.Home.y, "assets/link.png");
+        link = new Sprite(world.Home.x, world.Home.y, tileSize, tileSize, "assets/link.png");
     }
 
     public float TileSize { get => tileSize; set => tileSize = value; }
     public Map.Tileset? Tileset { get => tileset; set => tileset = value; }
+    public World World { get => world; }
+    public Map.Path? FinalPath { get => pathfinder?.FinalPath; }
 
     public void ChangeMap(int newId, bool setupPath = false)
     {
@@ -56,6 +58,11 @@ public class WorldViewer : UI
     public void SetAStarPoints((int x, int y)? newStart = null, (int x, int y)? newGoal = null)
     {
         pathfinder?.SetPoints(newStart, newGoal);
+    }
+
+    public void AddAction(Action act, float delay)
+    {
+        actionSequence.Enqueue((act, delay));
     }
 
     public void StartActionSequence()
@@ -87,6 +94,7 @@ public class WorldViewer : UI
         }
 
         // Draw extra map objects
+        // TODO: make this prettier
         if (currentMapID == -1)
         {
             // Draw lost woods entrance
@@ -112,16 +120,12 @@ public class WorldViewer : UI
         }
 
         // Draw expanded tiles over map
-        // TODO: font size scaling doesn't work
-        if (showExpandedTiles)
-        {
-            var costsSoFar = pathfinder?.GetCostsSoFar();
-            costsSoFar?.Keys.ToList().ForEach((Map.Tile t) => {
-                        Raylib.DrawRectangle((int) (pos.x + t.x * tileSize - offset.x), (int) (pos.y + t.y * tileSize - offset.y), (int) tileSize, (int) tileSize, expandedTileColor);
-                        if (costsSoFar[t] != int.MaxValue)
-                            Raylib.DrawText($"{costsSoFar[t]}", (int) (pos.x + t.x * tileSize - offset.x), (int) (pos.y + t.y * tileSize - offset.y), (int) (tileSize / 5), Color.BLACK);
-                });
-        }
+        var costsSoFar = pathfinder?.GetCostsSoFar();
+        costsSoFar?.Keys.ToList().ForEach((Map.Tile t) => {
+                    Raylib.DrawRectangle((int) (pos.x + t.x * tileSize - offset.x), (int) (pos.y + t.y * tileSize - offset.y), (int) tileSize, (int) tileSize, expandedTileColor);
+                    if (costsSoFar[t] != int.MaxValue && showExpandedCosts)
+                        Raylib.DrawText($"{costsSoFar[t]}", (int) (pos.x + t.x * tileSize - offset.x), (int) (pos.y + t.y * tileSize - offset.y), (int) (tileSize / 5), Color.BLACK);
+            });
 
         // Draws final path (when found)
         if (showPath)
@@ -130,8 +134,14 @@ public class WorldViewer : UI
                     Raylib.DrawRectangle((int) (pos.x + t.x * tileSize - offset.x), (int) (pos.y + t.y * tileSize - offset.y), (int) tileSize, (int) tileSize, pathColor);
                 });
         }
+
+        // Draw link sprite
+        link.Draw();
     }
 
+    public List<Map.Tile>? linkPath;
+    public bool isLinkWalking = false;
+    public float linkWhere = 0.0f;
     public override void Update(float delta)
     {
         // if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
@@ -143,6 +153,9 @@ public class WorldViewer : UI
         if (currentMapLabel != null)
             currentMapLabel.Text = currentMapID == -1 ? "Overworld" : $"Dungeon {currentMapID+1}";
 
+        if(isLinkWalking)
+            LinkWalk(delta);
+
         if (isPlaying)
             timer = Math.Max(timer - delta, 0);
 
@@ -153,18 +166,56 @@ public class WorldViewer : UI
             // Normal timer
             timer = stepTime;
 
-            if (actionSequence.Count > 0 && currentState == AStar.State.Success)
-            {
-                var (action, delay) = actionSequence.Dequeue();
-                action.Invoke();
-                timer = delay;
-            }
-            else if(currentState == AStar.State.Success) // There are no more actions, so stop the timer.
-            {
-                isPlaying = false;
-                Raylib.TraceLog(TraceLogLevel.LOG_INFO, "ACTIONSEQ: Action sequence finished.");
-            }
+            if (currentState == AStar.State.Success)
+                NextAction();
+            else if(currentState == AStar.State.NotReady)
+                NextAction();
         }
+    }
+
+    private void NextAction()
+    {
+        if (actionSequence.Count == 0)
+        {
+            isPlaying = false;
+            Raylib.TraceLog(TraceLogLevel.LOG_INFO, "ACTIONSEQ: Action sequence finished.");
+            return;
+        }
+
+        var (action, delay) = actionSequence.Dequeue();
+        action.Invoke();
+        timer = delay;
+    }
+
+    // TODO: CLEAN THIS SHIT UP YOU FUCKIN IDIOT
+    private void LinkWalk(float delta)
+    {
+        if (linkPath == null || linkWhere == 1.0f)
+            return;
+
+        var fract = (linkWhere * linkPath.Count) - Math.Floor(linkWhere * linkPath.Count);
+        int currentTile = (int) Math.Floor(linkWhere * linkPath.Count);
+        int nextTile = (int) Math.Ceiling(linkWhere * linkPath.Count);
+        if (Math.Abs(fract) <= 0.001f)
+            nextTile = currentTile + 1;
+
+        if (nextTile > linkPath.Count-1)
+            return;
+
+        var map = world.GetMapByID(currentMapID);
+        (float x, float y) offset = (map.sizeX * tileSize / 2, map.sizeY * tileSize / 2);
+        (float x, float y) position;
+        position.x = (float) ((1-fract) * linkPath[currentTile].x + fract * linkPath[nextTile].x);
+        position.y = (float) ((1-fract) * linkPath[currentTile].y + fract * linkPath[nextTile].y);
+
+        link.pos.x = pos.x + position.x * tileSize - offset.x;
+        link.pos.y = pos.y + position.y * tileSize - offset.y;
+        // Console.WriteLine($"Link position: ({link.pos.x},{link.pos.y})");
+
+        linkWhere += delta;
+
+        if(linkWhere > 1.0f)
+            linkWhere = 1.0f;
     }
 
     public override void Cleanup()

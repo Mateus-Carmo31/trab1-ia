@@ -11,4 +11,9 @@ public static class Utils
   {
     return (float) Math.Sqrt((double) ((goal.x - origin.x) * (goal.x - origin.x) + (goal.y - origin.y) * (goal.y - origin.y)));
   }
+
+  public static Tile ToTile(this (int, int) tuple)
+  {
+      return new Tile(tuple.Item1, tuple.Item2);
+  }
 }

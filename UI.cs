@@ -58,7 +58,9 @@ public class Button : UI
 
     public override void Draw()
     {
-        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.BLACK : Color.GRAY);
+        var border = 5;
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.DARKGRAY : Color.GRAY); // Base
+        Raylib.DrawRectangle((int) pos.x+border, (int) pos.y+border, (int) size.x-border*2, (int) size.y-border*2, pressed ? Color.DARKGRAY : Color.LIGHTGRAY); // Outline
     }
 
     public override void Update(float delta)
@@ -99,7 +101,7 @@ public class ToggleButton : UI
         //     return;
 
         // Raylib.DrawTextureQuad(pressed ? txButtonOn.Value : txButtonOff.Value, TILING, OFFSET, new Rectangle(pos.x, pos.y, size.x, size.y), Color.RAYWHITE);
-        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.BLACK : Color.GRAY);
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.DARKGRAY : Color.GRAY);
     }
 
     public override void Update(float delta)
@@ -121,9 +123,14 @@ public class Sprite : UI
     private Texture2D? texture = null;
     private Vector2 size;
 
-    public Sprite(float x, float y) : base(x,y) {}
-    public Sprite(float x, float y, string path) : base(x,y)
+    public Sprite(float x, float y, float sizeX, float sizeY) : base(x,y)
     {
+        this.size = new Vector2(sizeX, sizeY);
+    }
+
+    public Sprite(float x, float y, float sizeX, float sizeY, string path) : base(x,y)
+    {
+        this.size = new Vector2(sizeX, sizeY);
         SetTexture(path);
     }
 

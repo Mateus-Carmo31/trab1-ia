@@ -14,7 +14,7 @@ public class AStar
     Tile goal;
     Tile current;
 
-    public enum State { NotStarted, InExec, Success, Failure }
+    public enum State { NotReady, NotStarted, InExec, Success, Failure }
     State currentState = State.NotStarted;
 
     Path? finalPath = null;
@@ -25,7 +25,7 @@ public class AStar
     public AStar(Map map)
     {
         this.map = map;
-        currentState = State.Failure;
+        currentState = State.NotReady;
     }
 
     public AStar(Map map, (int x, int y) start, (int x, int y) goal)
@@ -43,7 +43,7 @@ public class AStar
     public (State, Path?) RunStep()
     {
         // Astar was already run to completion, so return result
-        if (currentState == State.Success || currentState == State.Failure)
+        if (currentState == State.Success || currentState == State.Failure || currentState == State.NotReady)
         {
             return (currentState, finalPath);
         }
@@ -125,7 +125,7 @@ public class AStar
         frontier = new PriorityQueue<Tile, float?>();
         cameFrom = new Dictionary<Tile, Tile?>();
         costSoFar = new Dictionary<Tile, int>();
-        currentState = State.NotStarted;
+        currentState = State.NotReady;
         finalPath = null;
     }
 

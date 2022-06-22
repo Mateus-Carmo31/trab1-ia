@@ -39,51 +39,39 @@ public class Application
         var worldViewer = new WorldViewer(400,440,18,world);
         worldViewer.Tileset = tileset;
 
-        // Go to first dungeon and generate path.
-        worldViewer.actionSequence.Enqueue((() => {
-            worldViewer.ChangeMap(0);
-            worldViewer.SetAStarPoints(world.Dungeons[0].GetStartPoint(), world.Dungeons[0].GetObjetive());
-            }, 0.0f));
-
-        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
-
-        // Go to second dungeon and generate path
-        worldViewer.actionSequence.Enqueue((() => {
-            worldViewer.ChangeMap(1);
-            worldViewer.SetAStarPoints(world.Dungeons[1].GetStartPoint(), world.Dungeons[1].GetObjetive());
-            }, 0.0f));
-
-        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
-
-        // Go to third dungeon and generate path
-        worldViewer.actionSequence.Enqueue((() => {
-            worldViewer.ChangeMap(2);
-            worldViewer.SetAStarPoints(world.Dungeons[2].GetStartPoint(), world.Dungeons[2].GetObjetive());
-            }, 0.0f));
-
-        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
-
-        worldViewer.actionSequence.Enqueue((() => {
-            worldViewer.ChangeMap(-1);
-            worldViewer.SetAStarPoints(world.Home, world.Dungeons[0].GetOverworldPoint());
-            }, 0.0f));
-
-        worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
+        DummySequence(worldViewer);
 
         var tb = new ToggleButton(350, 830, 50, 50);
-        tb.pressed = true;
-        tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedTiles = pressed; };
+        tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedCosts = pressed; };
 
         var b = new Button(50, 830, 100, 50);
         b.OnClick += (_, _) => { worldViewer.StartActionSequence(); b.active = false; };
 
-        var mapName = new Label(400, 40, "Map", 20, Color.BLACK);
+        var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
+
+        var costsLabel = new Label(400, 45, "Costs", 20, Color.BLACK);
+        worldViewer.costDisplayLabel = costsLabel;
 
         menuLayer.Add(tb);
         menuLayer.Add(b);
         menuLayer.Add(mapName);
+        menuLayer.Add(costsLabel);
         mapLayer.Add(worldViewer);
+    }
+
+    private void DummySequence(WorldViewer wv)
+    {
+        wv.AddAction(() => {
+            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(21,26)};
+            wv.isLinkWalking = true;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.linkWhere = 0.0f;
+            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(21,26)};
+            wv.isLinkWalking = true;
+            }, 3.0f);
     }
 
     public bool isRunning()
@@ -153,6 +141,107 @@ public class Application
     {
         DoCleanup();
         Raylib.CloseWindow();
+    }
+
+    private void SetupActionSequence(WorldViewer wv)
+    {
+        // Go to first dungeon and generate path.
+        wv.AddAction(() => {
+            wv.ChangeMap(0);
+            wv.costDisplayLabel!.Text = "Finding cost of dungeon 1...";
+            wv.SetAStarPoints(wv.World.Dungeons[0].GetStartPoint(), wv.World.Dungeons[0].GetObjetive());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to second dungeon and generate path
+        wv.AddAction(() => {
+            wv.ChangeMap(1);
+            wv.costDisplayLabel!.Text = "Finding cost of dungeon 2...";
+            wv.SetAStarPoints(wv.World.Dungeons[1].GetStartPoint(), wv.World.Dungeons[1].GetObjetive());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to third dungeon and generate path
+        wv.AddAction(() => {
+            wv.ChangeMap(2);
+            wv.costDisplayLabel!.Text = "Finding cost of dungeon 3...";
+            wv.SetAStarPoints(wv.World.Dungeons[2].GetStartPoint(), wv.World.Dungeons[2].GetObjetive());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from home to dungeon 0
+        wv.AddAction(() => {
+            wv.ChangeMap(-1);
+            wv.costDisplayLabel!.Text = "Finding cost Home -> Dungeon 1...";
+            wv.SetAStarPoints(wv.World.Home, wv.World.Dungeons[0].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from home to dungeon 1
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = "Finding cost Home -> Dungeon 2...";
+            wv.SetAStarPoints(wv.World.Home, wv.World.Dungeons[1].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from home to dungeon 2
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = "Finding cost Home -> Dungeon 3...";
+            wv.SetAStarPoints(wv.World.Home, wv.World.Dungeons[2].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from dungeon 0 to dungeon 1
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = "Finding cost Dungeon 1 -> Dungeon 2...";
+            wv.SetAStarPoints(wv.World.Dungeons[0].GetOverworldPoint(), wv.World.Dungeons[1].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from dungeon 1 to dungeon 2
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = "Finding cost Dungeon 2 -> Dungeon 3...";
+            wv.SetAStarPoints(wv.World.Dungeons[1].GetOverworldPoint(), wv.World.Dungeons[2].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Go to overworld and draw path from dungeon 0 to dungeon 2
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = "Finding cost Dungeon 1 -> Dungeon 3...";
+            wv.SetAStarPoints(wv.World.Dungeons[1].GetOverworldPoint(), wv.World.Dungeons[2].GetOverworldPoint());
+            }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        wv.AddAction(() => {
+
+            }, 0.0f);
     }
 
     private void DoCleanup()
