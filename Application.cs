@@ -36,7 +36,7 @@ public class Application
             new Dungeon(new Map.Tile(24, 1), new Map.Tile(14, 25), new Map.Tile(15, 19), "assets/dungeon3.txt")
         );
 
-        var worldViewer = new WorldViewer(400,450,18,world);
+        var worldViewer = new WorldViewer(400,440,18,world);
         worldViewer.Tileset = tileset;
 
         // Go to first dungeon and generate path.
@@ -70,13 +70,14 @@ public class Application
 
         worldViewer.actionSequence.Enqueue((() => {}, 3.0f));
 
-        var tb = new ToggleButton(700, 300, 50, 50);
+        var tb = new ToggleButton(350, 830, 50, 50);
+        tb.pressed = true;
         tb.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedTiles = pressed; };
 
-        var b = new Button(700, 200, 100, 50);
+        var b = new Button(50, 830, 100, 50);
         b.OnClick += (_, _) => { worldViewer.StartActionSequence(); b.active = false; };
 
-        var mapName = new Label(400, 10, "Map", 20, Color.BLACK);
+        var mapName = new Label(400, 40, "Map", 20, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
 
         menuLayer.Add(tb);

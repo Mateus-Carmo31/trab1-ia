@@ -38,7 +38,7 @@ public class Label : UI
     public override void Draw()
     {
         if(centered)
-            Raylib.DrawText(text, (int) (pos.x - Raylib.MeasureText(text, fontSize) / 2), (int) (pos.y - Raylib.MeasureText(text, fontSize) / 2), fontSize, textColor);
+            Raylib.DrawText(text, (int) (pos.x - Raylib.MeasureText(text, fontSize) / 2), (int) (pos.y - fontSize / 2), fontSize, textColor);
         else
             Raylib.DrawText(text, (int) pos.x, (int) pos.y, fontSize, textColor);
     }

@@ -21,7 +21,7 @@ public class WorldViewer : UI
     // Visual Controls
     private float tileSize;
     public bool showPath = true;
-    public bool showExpandedTiles = false;
+    public bool showExpandedTiles = true;
 
     // A* update controls
     public bool isPlaying = false;
