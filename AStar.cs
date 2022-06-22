@@ -142,6 +142,9 @@ public class AStar
         }
         if(newGoal.HasValue)
             goal = new Tile(newGoal.Value.x, newGoal.Value.y);
+
+        if(newStart.HasValue && newGoal.HasValue)
+            currentState = State.NotStarted;
     }
 
     // Backtracks from tile t until the beginning.
