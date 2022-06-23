@@ -25,7 +25,7 @@ public class WorldViewer : UI
 
     // A* update controls
     public bool isPlaying = false;
-    public float stepTime = 0.01f;
+    public float stepTime = Speed.normal;
     private float timer;
 
     // Sequence of actions (actions are changing map, setting AStar points, etc.)

@@ -46,16 +46,43 @@ public class Application
             worldViewer.showExpandedCosts = pressed;
         };
 
-        Button playPauseButton = new Button(22, 830, 150, 50, "PLAY", Color.GREEN);
+        Button playPauseButton = new Button(22, 830, 150, 50, "PLAY", Colors.green);
         playPauseButton.OnClick += (_, _) => { 
             worldViewer.PlayPauseSequence();
             playPauseButton.buttonText = worldViewer.isPlaying ? "PAUSE" : "PLAY";
-            playPauseButton.buttonColor = worldViewer.isPlaying ? Color.RED : Color.GREEN;
+            playPauseButton.buttonColor = worldViewer.isPlaying ? Colors.red : Colors.green;
         };
 
-        Button slowSpeedButton = new Button(578, 830, 60, 50, "0.5X", Color.BLUE);
-        Button normalSpeedButton = new Button(648, 830, 60, 50, "1X", Color.BLUE);
-        Button fastSpeedButton = new Button(718, 830, 60, 50, "2X", Color.BLUE);
+        Button slowSpeedButton = new Button(578, 830, 60, 50, "0.5X", getSpeedButtonColorByValue(Speed.slow));
+        Button normalSpeedButton = new Button(648, 830, 60, 50, "1X", getSpeedButtonColorByValue(Speed.normal));
+        Button fastSpeedButton = new Button(718, 830, 60, 50, "2X", getSpeedButtonColorByValue(Speed.fast));
+
+        slowSpeedButton.OnClick += (_, _) => { 
+            worldViewer.stepTime = Speed.slow;
+            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
+            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
+            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        };
+
+        normalSpeedButton.OnClick += (_, _) => { 
+            worldViewer.stepTime = Speed.normal;
+            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
+            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
+            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        };
+
+        fastSpeedButton.OnClick += (_, _) => { 
+            worldViewer.stepTime = Speed.fast;
+            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
+            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
+            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        };
+
+        Color getSpeedButtonColorByValue(float value)
+        {
+            return worldViewer?.stepTime == value ? Colors.middleBlue : Colors.lightBlue;
+        }
+        
 
         var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
