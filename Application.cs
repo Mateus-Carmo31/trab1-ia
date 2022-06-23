@@ -1,4 +1,4 @@
-﻿namespace MapPathfinder;
+namespace MapPathfinder;
 using Raylib_cs;
 
 using Tile = Map.Tile;
@@ -41,20 +41,21 @@ public class Application
 
         DummySequence(worldViewer);
 
-        var showCostsButton = new ToggleButton(350, 830, 50, 50);
-        showCostsButton.OnToggle += (object? o, bool pressed) => { worldViewer.showExpandedCosts = pressed; };
-
-        var startButton = new Button(50, 830, 100, 50);
-        startButton.OnClick += (_, _) => { 
-            worldViewer.StartActionSequence(); 
-            startButton.active = false;
+        var showCostsToggleButton = new ToggleButton(250, 830, "CUSTOS");
+        showCostsToggleButton.OnToggle += (object? o, bool pressed) => { 
+            worldViewer.showExpandedCosts = pressed;
         };
 
-        var playPauseButton = new Button(550, 830, 200, 50);
+        Button playPauseButton = new Button(22, 830, 150, 50, "PLAY", Color.GREEN);
         playPauseButton.OnClick += (_, _) => { 
-            worldViewer.PlayPauseSequence(); 
-            playPauseButton.active = true;
+            worldViewer.PlayPauseSequence();
+            playPauseButton.buttonText = worldViewer.isPlaying ? "PAUSE" : "PLAY";
+            playPauseButton.buttonColor = worldViewer.isPlaying ? Color.RED : Color.GREEN;
         };
+
+        Button slowSpeedButton = new Button(578, 830, 60, 50, "0.5X", Color.BLUE);
+        Button normalSpeedButton = new Button(648, 830, 60, 50, "1X", Color.BLUE);
+        Button fastSpeedButton = new Button(718, 830, 60, 50, "2X", Color.BLUE);
 
         var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
         worldViewer.currentMapLabel = mapName;
@@ -62,9 +63,11 @@ public class Application
         var costsLabel = new Label(400, 45, "Costs", 20, Color.BLACK);
         worldViewer.costDisplayLabel = costsLabel;
 
-        menuLayer.Add(showCostsButton);
-        menuLayer.Add(startButton);
+        menuLayer.Add(showCostsToggleButton);
         menuLayer.Add(playPauseButton);
+        menuLayer.Add(slowSpeedButton);
+        menuLayer.Add(normalSpeedButton);
+        menuLayer.Add(fastSpeedButton);
         menuLayer.Add(mapName);
         menuLayer.Add(costsLabel);
         mapLayer.Add(worldViewer);
@@ -95,41 +98,9 @@ public class Application
         Update(dt);
         Render(dt);
     }
-
-    // float x = 0, y = 0, speedX = 100, speedY = 100;
-    // float timer = 0.02f, timerMax = 0.02f;
-    // bool autoStep = false, drawCurrent = true, drawCosts = false;
-    // AStar.State execState;
+    
     public void Update(float delta)
     {
-        // x += speedX * delta;
-        // y += speedY * delta;
-
-        // if (x + 20 >= 800 || x < 0)
-        // {
-        //     x = speedX > 0 ? 780 : 0;
-        //     speedX = -speedX;
-        // }
-        // if (y + 20 >= 480 || y < 0)
-        // {
-        //     y = speedY > 0 ? 460 : 0;
-        //     speedY = -speedY;
-        // }
-
-        // if (autoStep)
-        //     timer = Math.Max(0, timer - delta);
-
-        // if (Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
-        //     autoStep = !autoStep;
-
-        // if (Raylib.IsKeyPressed(KeyboardKey.KEY_C))
-        //     drawCosts = !drawCosts;
-
-        // if ((timer == 0 || Raylib.IsKeyPressed(KeyboardKey.KEY_N)) && (execState == AStar.State.NotStarted || execState == AStar.State.InExec))
-        // {
-        //     (execState, _) = pathfinder.RunStep();
-        //     timer = timerMax;
-        // }
         mapLayer.ForEach((UI ui) => {if (ui.active) ui.Update(delta);} );
         menuLayer.ForEach((UI ui) => {if (ui.active) ui.Update(delta);} );
     }
@@ -138,8 +109,6 @@ public class Application
     {
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.WHITE);
-
-        // Raylib.DrawRectangle((int) x, (int) y, 20, 20, Color.BLACK);
 
         mapLayer.ForEach((UI ui) => {if (ui.active) ui.Draw();} );
         menuLayer.ForEach((UI ui) => {if (ui.active) ui.Draw();} );

@@ -50,17 +50,28 @@ public class Button : UI
     private bool pressed = false;
     public (float x, float y) size;
 
-    public Button(float x, float y, float sizeX, float sizeY) : base(x,y)
+    public string buttonText;
+
+    public Color buttonColor;
+
+    public Button(float x, float y, float sizeX, float sizeY, string buttonText, Color buttonColor) : base(x,y)
     {
         size.x = sizeX;
         size.y = sizeY;
+        this.buttonText = buttonText ?? "";
+        this.buttonColor = buttonColor;
     }
 
     public override void Draw()
     {
         var border = 5;
-        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.DARKGRAY : Color.GRAY); // Base
-        Raylib.DrawRectangle((int) pos.x+border, (int) pos.y+border, (int) size.x-border*2, (int) size.y-border*2, pressed ? Color.DARKGRAY : Color.LIGHTGRAY); // Outline
+        int fontSize = 22;
+        // Draw Border
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Color.BLACK);
+        // Draw Inner Button Color
+        Raylib.DrawRectangle((int) pos.x+border, (int) pos.y+border, (int) size.x-border*2, (int) size.y-border*2, buttonColor);
+
+        Raylib.DrawText(buttonText,(int) (pos.x + ((size.x - Raylib.MeasureText(buttonText, fontSize)) / 2)), (int) (pos.y + (size.y - fontSize) / 2), fontSize, Color.WHITE);
     }
 
     public override void Update(float delta)
@@ -89,19 +100,35 @@ public class ToggleButton : UI
     public bool pressed = false;
     public (float x, float y) size;
 
-    public ToggleButton(float x, float y, float sizeX, float sizeY) : base(x,y)
+    public string text;
+
+    public ToggleButton(float x, float y, string text) : base(x,y)
     {
-        size.x = sizeX;
-        size.y = sizeY;
+        size.x = 50;
+        size.y = 50;
+        this.text = text;
     }
 
     public override void Draw()
-    {
-        // if (!txButtonOff.HasValue || !txButtonOn.HasValue)
-        //     return;
+    {   
+        int outerBorder = 5;
+        int innerBorder = 5;
+        int totalBorder = outerBorder + innerBorder;
+        int fontSize = 22;
 
-        // Raylib.DrawTextureQuad(pressed ? txButtonOn.Value : txButtonOff.Value, TILING, OFFSET, new Rectangle(pos.x, pos.y, size.x, size.y), Color.RAYWHITE);
-        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, pressed ? Color.DARKGRAY : Color.GRAY);
+        // Draw Border
+        Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Color.BLACK);
+        // Draw Inner Button Color
+        Raylib.DrawRectangle((int) pos.x + outerBorder, (int) pos.y + outerBorder, (int) size.x - outerBorder * 2, (int) size.y - outerBorder * 2, Color.WHITE);
+        if (pressed)
+        {
+            Raylib.DrawRectangle((int) pos.x + totalBorder, (int) pos.y + totalBorder, (int) size.x - totalBorder * 2, (int) size.y - totalBorder * 2, Color.GREEN);
+        }
+
+        if (text.Length != 0)
+        {
+            Raylib.DrawText(text, (int) (pos.x + size.x + 8), (int) (pos.y + (size.y - fontSize) / 2), fontSize, Color.BLACK);
+        }
     }
 
     public override void Update(float delta)
