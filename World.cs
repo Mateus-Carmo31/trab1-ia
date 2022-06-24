@@ -60,10 +60,12 @@ public class World
         return dungeons[id].GetMap();
     }
 
+    // Returns a tuple (array, int) where the array is the index of the dungeons in the best possible travel order (TSP solution), and the other int is the best path cost.
     public (int[], int) FindBestPath()
     {
         PopulateDungeonPaths();
         List<int[]> permutations = new List<int[]>();
+        // Enumerable.Range here just generates the array [0,1,2, ..., dungeons.Count-1]
         Permutations(Enumerable.Range(0, dungeons.Count).ToArray(), 0, dungeons.Count-1, ref permutations);
 
         int bestOrderId = 0;
@@ -82,7 +84,8 @@ public class World
         return (permutations[bestOrderId], bestOrderCost);
     }
 
-    //
+    // Generates all permutations of dungeonIds and stores them in permutationsOut.
+    // Works by shifting elements around recursively and storing each branching path individually once l == r (recursion tree leaf);
     private void Permutations(int[] dungeonIds, int l, int r, ref List<int[]> permutationsOut)
     {
         if (l == r)
@@ -107,6 +110,18 @@ public class World
         }
     }
 
+    // Given a permutation of dungeons, returns the cost of that permutation.
+    // For example, given [0,1,2], it'll calculate:
+    // - cost from Link's house to dungeon 0
+    // - cost to get the pendant in dungeon 0 and come back
+    // - cost from dungeon 0 to dungeon 1
+    // - cost to get the pendant in dungeon 1 and come back
+    // - cost from dungeon 0 to dungeon 2
+    // - cost to get the pendant in dungeon 2 and come back
+    // - cost from dungeon 2 back to link's house
+    // - cost from link's house to lost woods
+    //
+    // If a path can't be found... returns int.MaxValue
     private int EvaluateCost(int[] perm)
     {
         int costOfPermutation = 0;
@@ -127,6 +142,10 @@ public class World
         for (int i = 0; i < perm.Length; i++)
         {
             // Custo para entrar na dungeon, indo até o pingente e voltar
+            // Se esse caminho não for gerado devidamente (ou não existir, falha)
+            if(Dungeons[perm[i]].crossingPath == null)
+                return int.MaxValue;
+
             costOfPermutation += 2 * Dungeons[perm[i]].crossingPath!.Cost;
 
             // Se não for a última dungeon do trajeto, adicionar custo para a próxima dungeon
@@ -160,6 +179,7 @@ public class World
         return costOfPermutation;
     }
 
+    // Pre-computes dungeon paths to avoid needless recomputing in EvaluateCost
     private void PopulateDungeonPaths()
     {
         for(int i = 0; i < dungeons.Count; i++)

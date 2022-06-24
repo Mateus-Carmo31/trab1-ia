@@ -120,6 +120,7 @@ public class ToggleButton : UI
         Raylib.DrawRectangle((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Color.BLACK);
         // Draw Inner Button Color
         Raylib.DrawRectangle((int) pos.x + outerBorder, (int) pos.y + outerBorder, (int) size.x - outerBorder * 2, (int) size.y - outerBorder * 2, Color.WHITE);
+
         if (pressed)
         {
             Raylib.DrawRectangle((int) pos.x + totalBorder, (int) pos.y + totalBorder, (int) size.x - totalBorder * 2, (int) size.y - totalBorder * 2, Color.GREEN);

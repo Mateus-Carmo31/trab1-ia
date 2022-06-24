@@ -4,7 +4,10 @@ using Raylib_cs;
 
 public class Map
 {
+    // Dados do mapa. Cada posição do array equivale à uma tile (x,y) do mapa, tal que i = x + size
     public char[] mapData;
+    public int sizeX, sizeY;
+    // Tabela de custos
     public static readonly Dictionary<char, int> TileCosts = new Dictionary<char, int>()
         {
             {'.', 10},
@@ -73,7 +76,6 @@ public class Map
         public Path(List<Tile> tiles, int cost) { this.tiles = tiles; this.cost = cost; }
     }
 
-    public int sizeX, sizeY;
 
     public Map(int mapX, int mapY)
     {
@@ -82,6 +84,7 @@ public class Map
         this.sizeY = 42;
     }
 
+    // Lê o mapa a partir de uma string pré-formatada (obtida do arquivo do mapa)
     public Map(string mapStr, int mapX, int mapY)
     {
         this.sizeX = mapX;
@@ -118,7 +121,7 @@ public class Map
         // Lista de posições relativas adjacentes ao current
         var neighbours = new List<Tile> {new Tile(1, 0), new Tile(0, -1), new Tile(-1, 0), new Tile(0, 1)};
 
-        // Lista de posições absolutas adjacentes ao current no mapa
+        // Gera lista de posições absolutas adjacentes ao current no mapa
         neighbours = neighbours.ConvertAll<Tile>((Tile tile) => {
             tile.x += t.x;
             tile.y += t.y;

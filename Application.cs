@@ -26,6 +26,7 @@ public class Application
         tileset.SetSprite('C', "assets/cave.png");
         tileset.SetSprite('P', "assets/pendant.png");
         tileset.SetSprite('L', "assets/lostwoods.png");
+        tileset.SetSprite('H', "assets/house.png");
 
         World world = new World(
             @"assets/hyrule.txt",
@@ -38,80 +39,89 @@ public class Application
 
         var worldViewer = new WorldViewer(400,440,18,world);
         worldViewer.Tileset = tileset;
-
-        DummySequence(worldViewer);
-
         var showCostsToggleButton = new ToggleButton(250, 830, "CUSTOS");
-        showCostsToggleButton.OnToggle += (object? o, bool pressed) => { 
+        Button startButton = new Button(22, 830, 150, 50, "START", Colors.green);
+        Button playPauseButton = new Button(22, 830, 150, 50, "PAUSE", Colors.red);
+        Button restartButton = new Button(180, 830, 50, 50, "R", Colors.red);
+        Button slowSpeedButton = new Button(578, 830, 60, 50, "0.5X", Colors.lightBlue);
+        Button normalSpeedButton = new Button(648, 830, 60, 50, "1X", Colors.middleBlue);
+        Button fastSpeedButton = new Button(718, 830, 60, 50, "2X", Colors.lightBlue);
+        var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
+        var costsLabel = new Label(400, 45, "", 20, Color.BLACK);
+
+        SetupActionSequence(worldViewer);
+
+        worldViewer.currentMapLabel = mapName;
+        worldViewer.costDisplayLabel = costsLabel;
+        worldViewer.OnSequenceFinished += (_,_) => {
+            playPauseButton.active = false;
+            startButton.active = false;
+            };
+
+        showCostsToggleButton.OnToggle += (object? o, bool pressed) => {
             worldViewer.showExpandedCosts = pressed;
         };
 
-        Button playPauseButton = new Button(22, 830, 150, 50, "PLAY", Colors.green);
-        playPauseButton.OnClick += (_, _) => { 
-            worldViewer.PlayPauseSequence();
+        playPauseButton.active = false;
+        playPauseButton.OnClick += (_, _) => {
+            worldViewer.isPlaying = !worldViewer.isPlaying;
             playPauseButton.buttonText = worldViewer.isPlaying ? "PAUSE" : "PLAY";
             playPauseButton.buttonColor = worldViewer.isPlaying ? Colors.red : Colors.green;
         };
 
-        Button slowSpeedButton = new Button(578, 830, 60, 50, "0.5X", getSpeedButtonColorByValue(Speed.slow));
-        Button normalSpeedButton = new Button(648, 830, 60, 50, "1X", getSpeedButtonColorByValue(Speed.normal));
-        Button fastSpeedButton = new Button(718, 830, 60, 50, "2X", getSpeedButtonColorByValue(Speed.fast));
-
-        slowSpeedButton.OnClick += (_, _) => { 
-            worldViewer.stepTime = Speed.slow;
-            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
-            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
-            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        startButton.OnClick += (_, _) => {
+            startButton.active = false;
+            playPauseButton.active = true;
+            worldViewer.StartActionSequence();
         };
 
-        normalSpeedButton.OnClick += (_, _) => { 
-            worldViewer.stepTime = Speed.normal;
-            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
-            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
-            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        restartButton.OnClick += (_,_) => {
+            World w = new World(
+                @"assets/hyrule.txt",
+                new Tile(24, 27),
+                new Tile(6, 5),
+                new Dungeon(new Map.Tile(5, 32), new Map.Tile(14, 26), new Map.Tile(13, 3), "assets/dungeon1.txt"),
+                new Dungeon(new Map.Tile(39, 17), new Map.Tile(13, 25), new Map.Tile(13, 2), "assets/dungeon2.txt"),
+                new Dungeon(new Map.Tile(24, 1), new Map.Tile(14, 25), new Map.Tile(15, 19), "assets/dungeon3.txt")
+            );
+
+            startButton.active = true;
+            playPauseButton.active = false;
+            worldViewer.Reset(w);
+            SetupActionSequence(worldViewer);
         };
 
-        fastSpeedButton.OnClick += (_, _) => { 
-            worldViewer.stepTime = Speed.fast;
-            slowSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.slow);
-            normalSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.normal);
-            fastSpeedButton.buttonColor = getSpeedButtonColorByValue(Speed.fast);
+        slowSpeedButton.OnClick += (_, _) => {
+            worldViewer.stepTime = WorldViewer.slow;
+            slowSpeedButton.buttonColor = Colors.middleBlue;
+            normalSpeedButton.buttonColor = Colors.lightBlue;
+            fastSpeedButton.buttonColor = Colors.lightBlue;
         };
 
-        Color getSpeedButtonColorByValue(float value)
-        {
-            return worldViewer?.stepTime == value ? Colors.middleBlue : Colors.lightBlue;
-        }
-        
+        normalSpeedButton.OnClick += (_, _) => {
+            worldViewer.stepTime = WorldViewer.normal;
+            slowSpeedButton.buttonColor = Colors.lightBlue;
+            normalSpeedButton.buttonColor = Colors.middleBlue;
+            fastSpeedButton.buttonColor = Colors.lightBlue;
+        };
 
-        var mapName = new Label(400, 20, "Map", 25, Color.BLACK);
-        worldViewer.currentMapLabel = mapName;
-
-        var costsLabel = new Label(400, 45, "Costs", 20, Color.BLACK);
-        worldViewer.costDisplayLabel = costsLabel;
+        fastSpeedButton.OnClick += (_, _) => {
+            worldViewer.stepTime = WorldViewer.fast;
+            slowSpeedButton.buttonColor = Colors.lightBlue;
+            normalSpeedButton.buttonColor = Colors.lightBlue;
+            fastSpeedButton.buttonColor = Colors.middleBlue;
+        };
 
         menuLayer.Add(showCostsToggleButton);
         menuLayer.Add(playPauseButton);
+        menuLayer.Add(startButton);
+        menuLayer.Add(restartButton);
         menuLayer.Add(slowSpeedButton);
         menuLayer.Add(normalSpeedButton);
         menuLayer.Add(fastSpeedButton);
         menuLayer.Add(mapName);
         menuLayer.Add(costsLabel);
         mapLayer.Add(worldViewer);
-    }
-
-    private void DummySequence(WorldViewer wv)
-    {
-        wv.AddAction(() => {
-            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(20,27), new Tile(19,27), new Tile(18,27), new Tile(17,27), new Tile(16,27), new Tile(15,27),new Tile(14,27) ,new Tile(13,27), new Tile(12,27), new Tile(11,27), new Tile(10,27),new Tile(9,27),new Tile(8,27),new Tile(7,27)};
-            wv.isLinkWalking = true;
-            }, 3.0f);
-
-        wv.AddAction(() => {
-            wv.linkWhere = 0.0f;
-            wv.linkPath = new List<Map.Tile>{new Tile(24, 27), new Tile(23,27), new Tile(22,27), new Tile(21,27), new Tile(20,27), new Tile(19,27), new Tile(18,27), new Tile(17,27), new Tile(16,27), new Tile(15,27),new Tile(14,27) ,new Tile(13,27), new Tile(12,27), new Tile(11,27), new Tile(10,27),new Tile(9,27),new Tile(8,27),new Tile(7,27)};
-            wv.isLinkWalking = true;
-            }, 3.0f);
     }
 
     public bool isRunning()
@@ -149,6 +159,12 @@ public class Application
         Raylib.CloseWindow();
     }
 
+    // This adds a series of actions to the WorldViewer
+    // Namely:
+    // - Shows the AStar finding the best path in each dungeon
+    // - Shows the AStar finding the best path between each dungeon in the overworld
+    // - Shows Link moving from place to place.
+    // in this order.
     private void SetupActionSequence(WorldViewer wv)
     {
         // Go to first dungeon and generate path.
@@ -159,7 +175,7 @@ public class Application
             }, 0.0f);
 
         wv.AddAction(() => {
-            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost} x 2";
             }, 3.0f);
 
         // Go to second dungeon and generate path
@@ -170,7 +186,7 @@ public class Application
             }, 0.0f);
 
         wv.AddAction(() => {
-            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost} x 2";
             }, 3.0f);
 
         // Go to third dungeon and generate path
@@ -181,7 +197,7 @@ public class Application
             }, 0.0f);
 
         wv.AddAction(() => {
-            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost} x 2";
             }, 3.0f);
 
         // Go to overworld and draw path from home to dungeon 0
@@ -238,16 +254,95 @@ public class Application
         // Go to overworld and draw path from dungeon 0 to dungeon 2
         wv.AddAction(() => {
             wv.costDisplayLabel!.Text = "Finding cost Dungeon 1 -> Dungeon 3...";
-            wv.SetAStarPoints(wv.World.Dungeons[1].GetOverworldPoint(), wv.World.Dungeons[2].GetOverworldPoint());
+            wv.SetAStarPoints(wv.World.Dungeons[0].GetOverworldPoint(), wv.World.Dungeons[2].GetOverworldPoint());
             }, 0.0f);
 
         wv.AddAction(() => {
             wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
             }, 3.0f);
 
+        // Draw path from Link's House to Lost Woods
         wv.AddAction(() => {
-
+            wv.costDisplayLabel!.Text = "Finding cost Link's Home -> Lost Woods...";
+            wv.SetAStarPoints(wv.World.Home, wv.World.LostWoods);
             }, 0.0f);
+
+        wv.AddAction(() => {
+            wv.costDisplayLabel!.Text = $"Cost of path: {wv.FinalPath?.Cost}";
+            }, 3.0f);
+
+        // Show Link travelling around the dungeons!
+        var (bestOrder, bestCost) = wv.World.FindBestPath();
+
+        wv.AddAction(() => {
+            wv.ChangeMap(-1);
+            wv.isLinkWalking = true;
+            wv.costDisplayLabel!.Text = $"Best path = Dungeon {bestOrder[0]+1} -> Dungeon {bestOrder[1]+1} -> Dungeon {bestOrder[2]+1} (Total cost: {bestCost})";
+            wv.linkPath = AStar.FindPath(wv.World.Overworld, wv.World.Home, wv.World.Dungeons[bestOrder[0]].GetOverworldPoint())!.tiles;
+            wv.linkWhere = 0;
+            }, 2.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = true;
+            wv.ChangeMap(bestOrder[0]);
+            wv.linkPath = wv.World.Dungeons[bestOrder[0]].crossingPath!.tiles;
+            wv.linkWhere = 0;
+            }, 4.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = false;
+            wv.linkPath!.Reverse();
+            wv.linkWhere = 0;
+            }, 4.0f);
+
+        wv.AddAction(() => {
+            wv.ChangeMap(-1);
+            wv.linkPath = AStar.FindPath(wv.World.Overworld, wv.World.Dungeons[bestOrder[0]].GetOverworldPoint(), wv.World.Dungeons[bestOrder[1]].GetOverworldPoint())!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = true;
+            wv.ChangeMap(bestOrder[1]);
+            wv.linkPath = wv.World.Dungeons[bestOrder[1]].crossingPath!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = false;
+            wv.linkPath!.Reverse();
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.ChangeMap(-1);
+            wv.linkPath = AStar.FindPath(wv.World.Overworld, wv.World.Dungeons[bestOrder[1]].GetOverworldPoint(), wv.World.Dungeons[bestOrder[2]].GetOverworldPoint())!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = true;
+            wv.ChangeMap(bestOrder[2]);
+            wv.linkPath = wv.World.Dungeons[bestOrder[2]].crossingPath!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.showPendant = false;
+            wv.linkPath!.Reverse();
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.ChangeMap(-1);
+            wv.linkPath = AStar.FindPath(wv.World.Overworld, wv.World.Dungeons[bestOrder[2]].GetOverworldPoint(), wv.World.Home)!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
+
+        wv.AddAction(() => {
+            wv.linkPath = AStar.FindPath(wv.World.Overworld, wv.World.Home, wv.World.LostWoods)!.tiles;
+            wv.linkWhere = 0;
+            }, 3.0f);
     }
 
     private void DoCleanup()

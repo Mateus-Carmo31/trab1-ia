@@ -66,6 +66,7 @@ public class AStar
             int costToNext = CostToNext(next);
             int newCost;
 
+            // Treats int.MaxValue (to avoid overflow)
             if (costToNext == int.MaxValue || costSoFar[current] == int.MaxValue)
             {
                 newCost = costToNext;
@@ -108,6 +109,7 @@ public class AStar
         return path;
     }
 
+    // Static method for easily running AStar without needing to keep the AStar instance
     public static Path? FindPath(Map map, (int x, int y) start, (int x, int y) goal)
     {
         AStar pathfinder = new AStar(map, start, goal);

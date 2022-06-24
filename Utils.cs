@@ -19,15 +19,9 @@ public static class Utils
     }
 }
 
-public abstract class Colors {
+public static class Colors {
     public static Color green = new Color(144, 224, 117, 255);
     public static Color lightBlue = new Color(144, 224, 243, 255);
     public static Color middleBlue = new Color(144, 171, 255, 255);
     public static Color red = new Color(255, 76, 0, 255);
-}
-
-public abstract class Speed {
-    public static float slow = 0.1f;
-    public static float normal = 0.3f;
-    public static float fast = 0.01f;
 }
